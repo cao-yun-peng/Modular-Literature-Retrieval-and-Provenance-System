@@ -1,0 +1,70 @@
+
+{
+  "description": "Manually verified test set",
+  "version": "1.0",
+  "test_cases": [
+    {
+      "query": "When simulating active vesicles, how does the relationship between swimming pressure and membrane curvature differ in three dimensions versus two dimensions?",
+      "expected_chunk_ids": ["doc_e058e2683ed47f8b_0021_4c75858c"],
+      "reference_answer": "Swimming pressure grows superlinearly with membrane curvature in 3D, while in 2D it shows linear or weakly sublinear growth. Excluded volume interactions reduce the absolute value of swimming pressure but do not change its scaling behavior."
+    },
+    {
+      "query": "What shape order parameters are used in the study to distinguish prolate, oblate, and stomatocyte shapes of vesicles?",
+      "expected_chunk_ids": ["doc_e058e2683ed47f8b_0016_2693b654"],
+      "reference_answer": "The prolateness P and asphericity A, defined from the eigenvalues of the shape tensor Q_αβ derived from membrane vertex positions. P>0 indicates prolate, P<0 indicates oblate. Stomatocyte is identified by A<0.1 and reduced volume V̂<0.7."
+    },
+    {
+      "query": "What terms are included in the membrane energy function when simulating vesicle shape transitions?",
+      "expected_chunk_ids": ["doc_e058e2683ed47f8b_0024_080c500c"],
+      "reference_answer": "Total free energy H = H_bend + H_A + H_V, where H_bend is Helfrich bending energy (2κ∮H²dS), H_A and H_V are area and volume constraint energies, respectively, using quadratic forms."
+    },
+    {
+      "query": "What is the Forward Flux Sampling (FFS) method used to compute in this study?",
+      "expected_chunk_ids": ["doc_e058e2683ed47f8b_0029_90d3316f",
+                            "doc_e058e2683ed47f8b_0032_fe9cc565",
+                            "doc_e058e2683ed47f8b_0004_6deb7ebe"],
+      "reference_answer": "FFS is used to enhance sampling of rare transitions of vesicles from near-spherical to distinctly prolate shapes, calculating rate constants and free energy landscapes under freely varying volume. Reduced volume is used as an order parameter, driving the system over barriers through a series of interfaces."
+    },
+    {
+      "query": "How is non-reciprocal interaction introduced in the two-dimensional XY model?",
+      "expected_chunk_ids": ["doc_a025668036c1f6f0_0011_3765ffd7"],
+      "reference_answer": "By modifying the nearest-neighbor coupling with a weighting kernel g_σ(φ_ij) that depends on the orientation of spin i, where φ_ij is the angle between the direction of spin i and the bond direction. This breaks reciprocity. A smooth 'view-cone' kernel based on the Von Mises distribution, g_σ(φ)=exp(σ cos φ), is used, with σ controlling the degree of non-reciprocity."
+    },
+    {
+      "query": "How does non-reciprocal interaction affect the shape of +1 topological defects?",
+      "expected_chunk_ids": ["doc_a025668036c1f6f0_0014_7d3155ab"],
+      "reference_answer": "In the non-reciprocal XY model, the shape μ₊ of a +1 defect is subject to torque. The source (μ₊=0) is an unstable fixed point, while the sink (μ₊=π) is a stable attractor. The force ∝ σ (∇×S)_z due to non-reciprocity distorts the defect, eventually turning it into the sink shape."
+    },
+    {
+      "query": "What is the effect of non-reciprocal interaction on the annihilation dynamics of +1 and -1 defects?",
+      "expected_chunk_ids": ["doc_a025668036c1f6f0_0022_a5151be2"],
+      "reference_answer": "For a pair of opposite-charge defects, if the +1 defect is a source (μ₊=0), annihilation is accelerated; if it is a sink (μ₊=π), annihilation is significantly slowed (up to 100 times the equilibrium time). Additionally, the motion of ±1 defects is asymmetric, with +1 defects moving faster. The negative defect produces a polarization axis that affects the direction of motion."
+    },
+    {
+      "query": "How is the continuum description of the non-reciprocal XY model related to the Toner-Tu equations?",
+      "expected_chunk_ids": ["doc_a025668036c1f6f0_0033_664035b4"],
+      "reference_answer": "The derived continuum equation ∂S/∂t = ΔS + σ̃(∇×S)×S + α(1-S²)S, where the (∇×S)×S term combines the self-advection term (S·∇)S and the self-anchoring term ∇|S|² from the Toner-Tu equation. This provides a microscopic link between non-reciprocal spin systems and flocking theory."
+    },
+    {
+      "query": "What kind of two-period dynamics are observed in moderately confined active nematics?",
+      "expected_chunk_ids": ["doc_d7dcc43048dc2563_0014_07c4ce11"],
+      "reference_answer": "In disks of diameter 100-200 μm, the system exhibits superimposed dynamics: a fast circulation period of about 10 s, with two +1/2 defects rotating around the center; a slow period of about 40-50 s, including defects spiraling inward causing the director field to become nearly circularly symmetric, followed by defect nucleation events at the boundary that produce a ±1/2 pair, resetting the configuration."
+    },
+    {
+      "query": "How is the degree of circular flow order quantified in experiments on active nematics?",
+      "expected_chunk_ids": ["doc_d7dcc43048dc2563_0032_1eb89144"],
+      "reference_answer": "Using the flow order parameter Φ(t)=⟨u·ê_θ/|u|⟩, where u is the velocity field from PIV and ê_θ is the angular unit vector. Φ=±1 indicates system-wide coherent circulation, Φ=0 indicates no net angular transport. The time-averaged |Φ| is used to measure the degree of circulation under different confinements."
+    },
+    {
+      "query": "What are the main differences between experiment and theory regarding defect density and the transition to circular flow?",
+      "expected_chunk_ids": ["doc_d7dcc43048dc2563_0036_280dcd59"],
+      "reference_answer": "Theory predicts that the onset of circular flow coincides with an increase in effective defect density, i.e., circulation begins when confinement is below the bulk defect spacing. However, experiments show that the structural transition (defect density increase at ~200 μm) and the dynamical transition (disappearance of circular flow at ~600 μm) occur at different confinement diameters. Under weak confinement, circular flow can persist even with multiple excess defects."
+    },
+    {
+      "query": "How do active nematics maintain circular flow under weak confinement (diameter 400-600 μm)?",
+      "expected_chunk_ids": ["doc_e058e2683ed47f8b_0029_90d3316f",
+  "doc_e058e2683ed47f8b_0032_fe9cc565"],
+      "reference_answer": "Despite defect nucleation both in the interior and at boundaries leading to fluctuating defect numbers (2-10 excess defect pairs), the system maintains coherent circulation, with the flow order parameter Φ remaining at ±1 or -1 for tens of seconds to minutes, occasionally reversing chirality. Defects align predominantly along the flow, sustaining the active stress that drives circulation."
+    }
+  ]
+}

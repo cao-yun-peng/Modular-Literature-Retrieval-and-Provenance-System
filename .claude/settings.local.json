@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pytest tests/unit/test_grobid_parser.py tests/unit/test_paper_pdf_loader.py tests/unit/test_document_chunker_paper.py tests/unit/test_linked_asset_resolution.py -v --tb=short)",
+      "Bash(python -m pytest tests/unit/test_grobid_parser.py::TestGrobidTEIParser::test_extract_sections_headings tests/unit/test_grobid_parser.py::TestGrobidTEIParser::test_extract_sections_levels tests/unit/test_document_chunker_paper.py::TestBodySectionChunking::test_figure_references_replaced_with_placeholder -v --tb=long)",
+      "Bash(python -m pytest tests/unit/test_document_chunker.py tests/unit/test_loader_pdf_contract.py tests/unit/test_response_builder.py tests/unit/test_core_types.py -v --tb=short)",
+      "Bash(python -c ' *)",
+      "Bash(python -m pytest tests/e2e/test_paper_pipeline.py::TestPaperLoaderSmoke -v --tb=long)",
+      "Bash(python -m pytest tests/e2e/test_paper_pipeline.py::TestPaperPipelineE2E -v --tb=long)",
+      "Bash(curl -s http://localhost:11434/api/tags)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(m['name']\\) for m in d['models']]\")",
+      "Bash(curl --noproxy '*' -s http://localhost:11434/api/tags)"
+    ]
+  }
+}

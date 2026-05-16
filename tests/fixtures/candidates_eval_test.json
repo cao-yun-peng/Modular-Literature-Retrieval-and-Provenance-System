@@ -1,0 +1,1040 @@
+{
+  "description": "Candidate chunks for golden test set annotation",
+  "collection": "eval_test",
+  "top_k": 10,
+  "instructions": "For each test case, review the candidates below. Copy chunk_id values that are genuinely relevant to the query into expected_chunk_ids in the golden test set. A chunk is relevant if it contains information that directly answers or supports answering the query.",
+  "test_cases": [
+    {
+      "query": "When simulating active vesicles, how does the relationship between swimming pressure and membrane curvature differ in three dimensions versus two dimensions?",
+      "reference_answer": "Swimming pressure grows superlinearly with membrane curvature in 3D, while in 2D it shows linear or weakly sublinear growth. Excluded volume interactions reduce the absolute value of swimming pressure but do not change its scaling behavior.",
+      "candidates": [
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0001_1c4f2777",
+          "score": 0.0325,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "[FIGURE: fig_0] Caption: Description: FIG.S1. Excluded volume interactions between the active particles lower the swim pressure but do not change scaling of the swim pressure with membrane curvature. a The swim-pressure difference ∆pswim for particles between the outer and inner apices of a sinusoid"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0024_080c500c",
+          "score": 0.0318,
+          "section": "ELASTIC PRESSURE",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## ELASTIC PRESSURE  The closed membrane of the vesicle is simulated with an area constraint, see Eq. S7. However, deforming a planar membrane is impossible without a change of its area. To study the curvature dependence of the interplay between the elastic pressure and the active swim pressure as d"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0027_c32a61e6",
+          "score": 0.0317,
+          "section": "THE EFFECT OF THE TRANSLATIONAL DIFFUSION CONSTANT",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": ". It is seen that the excluded-volume interactions lower the swim pressure, yet the swim pressure continues to scale super-linearly with membrane curvature. b The swim-pressure difference between the outer and inner apices for a sinusoidal line in 2D as a function of the absolute curvature C, again "
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0023_10f45ddc",
+          "score": 0.0315,
+          "section": "THE EFFECT OF EXCLUDED-VOLUME INTERACTIONS BETWEEN THE ACTIVE PARTICLES THE SWIM PRESSURE",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "Fig. S1 shows the result. Comparing the behavior of the finite-sized particles (red and blue dots) with that of the ideal particles (black dots), it is clear that the excluded volume interactions lower the absolute value of the swim pressure. This is because these interactions cause the particles to"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0021_4c75858c",
+          "score": 0.0312,
+          "section": "THE EFFECT OF EXCLUDED-VOLUME INTERACTIONS BETWEEN THE ACTIVE PARTICLES THE SWIM PRESSURE",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## THE EFFECT OF EXCLUDED-VOLUME INTERACTIONS BETWEEN THE ACTIVE PARTICLES THE SWIM PRESSURE  [FIG_REF: fig_1] of the main text shows that in 3D the swim pressure increases superlinearly with the membrane curvature while in 2D it increases linearly or even weakly sublinearly. The principal reason fo"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0020_84f39bed",
+          "score": 0.0296,
+          "section": "TABLE S2.",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## TABLE S2.  Simulation parameter values for the computation of the swim pressure as a function of the curvature, corresponding to [FIG_REF: fig_1] of the main text.  cles do not interact with each other yet do interact with the wall with a force  2 is the interaction potential between particle i w"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0012_7ee7a21d",
+          "score": 0.029,
+          "section": "Active particles",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "where r ij = |r i -q j | is the distance between the position of particle i and that of vertex j of the membrane, and σ pv is the cross-section of the interaction between a particle and a vertex. For simplicity, we have chosen k pp = k pv and σ pp = σ pv (see Table S1 for all parameter values).  Ves"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0019_33d4a423",
+          "score": 0.0282,
+          "section": "SWIM PRESSURE COMPUTATION",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## SWIM PRESSURE COMPUTATION  The active particles are confined between two sinusoidal surfaces described by z w (x, y) = z 0 + B sin (2πx/L) sin (2πy/L) and -z w (x, y) , respectively, where z 0 has been chosen large enough such that the correlation between the particle distributions at the two res"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0016_2693b654",
+          "score": 0.0281,
+          "section": "SHAPE ORDER PARAMETERS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## SHAPE ORDER PARAMETERS  We used a combination of order parameters to classify the vesicle shapes into prolate, oblate and stomatocyte.  The classification is based on the shape tensor Q αβ , which is defined by the positions of the N vertices of the membrane mesh:  where r iα is the Cartesian com"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0026_4f83b593",
+          "score": 0.0273,
+          "section": "THE EFFECT OF THE TRANSLATIONAL DIFFUSION CONSTANT",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "Fig. S2 shows that when the translational diffusion constant D t is increased, both the coexistence velocity v coex 0 and the barrier height increase. Increasing D t tends to decrease the propulsion force f prop = v 0 k B T /D t . To keep the system at coexistence, the coexistence propulsion velocit"
+        }
+      ]
+    },
+    {
+      "query": "What shape order parameters are used in the study to distinguish prolate, oblate, and stomatocyte shapes of vesicles?",
+      "reference_answer": "The prolateness P and asphericity A, defined from the eigenvalues of the shape tensor Q_αβ derived from membrane vertex positions. P>0 indicates prolate, P<0 indicates oblate. Stomatocyte is identified by A<0.1 and reduced volume V̂<0.7.",
+      "candidates": [
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0016_2693b654",
+          "score": 0.0328,
+          "section": "SHAPE ORDER PARAMETERS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## SHAPE ORDER PARAMETERS  We used a combination of order parameters to classify the vesicle shapes into prolate, oblate and stomatocyte.  The classification is based on the shape tensor Q αβ , which is defined by the positions of the N vertices of the membrane mesh:  where r iα is the Cartesian com"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0017_6c7b0998",
+          "score": 0.0323,
+          "section": "SHAPE ORDER PARAMETERS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "The prolateness -1 ≤ P ≤ 1 makes it possible to distinguish between prolate and oblate shapes. It is defined as  For prolate shapes P > 0 while for oblate shapes P < 0. S2), MV = 0. The parameters have been chosen such that the predictions of our work can be tested experimentally. Specifically, the "
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0018_247dafc9",
+          "score": 0.0317,
+          "section": "SHAPE ORDER PARAMETERS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "It characterizes how far a shape deviates from that of the ideal sphere. A vesicle was identified as a stomatocyte when A < 0.1 and its reduced volume is V < 0.7. The reduced volume criterion allows us to distinguish between fairly spherical vesicles with a large reduced volume and stomatocytes, whi"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0029_90d3316f",
+          "score": 0.0299,
+          "section": "FFS SIMULATIONS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## FFS SIMULATIONS  We use Forward Flux Sampling (FFS) to enhance the sampling of the rare transition between the (nearly) spherical shape and the distinctly prolate shape when the volume of the vesicle is allowed to vary freely, see [FIG_REF: fig_0] of the main text [13]. To enhance the sampling, F"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0033_38116843",
+          "score": 0.028,
+          "section": "S25)",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## S25)  Here ψ A ( V ) is the contribution to P ( V ) from the paths that start in A and either make it to B or return to A, while ψ B ( V ) is the contribution from paths in the opposite direction, starting in B and ending in either A or B. These contributions are given by  Here p A the steady-sta"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0064_cdfa4a83",
+          "score": 0.0267,
+          "section": "Methods",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Image Processing of the Director Field. In contrast to previous studies, the high birefringence of SU8 photoresists precludes the use of the LC-PolScope to directly quantify the director field (15). Instead, the director field was extracted from fluorescence images. The nematic order tensor, Q = n ⊗"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0001_de2e5969",
+          "score": 0.026,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "[FIGURE: fig_0] Caption: FIG. 1 . Description: FIG. 1. (a) Sketch of the nearest neighbors coupling: the isotropic reciprocal case, in blue, the sharp vision cone, in orange, and our smooth version, in green (using σ ¼ 5). (b)-(e) Four þ1 defects with different shapes μ þ . White dots show the defec"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0000_855b865e",
+          "score": 0.0156,
+          "section": "",
+          "chunk_type": "title_abstract",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "# Supplementary Movies and Supplementary Text for \"Shape Transformations of Vesicles induced by Swim Pressure\""
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0003_fc77fbc5",
+          "score": 0.0156,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "[FIGURE: tab_0] Caption: TABLE S1 . Description: Baseline parameter values for the simulations of the vesicle containing the active particles (Figs. 1, 3 and 4 of the main text). For the phase diagram of the vesicle in which both the area and volume are constrained (Fig. 1a main text),"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0035_99f03b61",
+          "score": 0.0154,
+          "section": "S25)",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "Since the optimal spacing between the interfaces is smaller at the pre-critical side of the barrier than at the post-critical side, we positioned the interfaces differently for the forward and reverse transitions. The positions for the FFS simulations of [FIG_REF: fig_0] of the main text correspondi"
+        }
+      ]
+    },
+    {
+      "query": "What terms are included in the membrane energy function when simulating vesicle shape transitions?",
+      "reference_answer": "Total free energy H = H_bend + H_A + H_V, where H_bend is Helfrich bending energy (2κ∮H²dS), H_A and H_V are area and volume constraint energies, respectively, using quadratic forms.",
+      "candidates": [
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0012_7ee7a21d",
+          "score": 0.0325,
+          "section": "Active particles",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "where r ij = |r i -q j | is the distance between the position of particle i and that of vertex j of the membrane, and σ pv is the cross-section of the interaction between a particle and a vertex. For simplicity, we have chosen k pp = k pv and σ pp = σ pv (see Table S1 for all parameter values).  Ves"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0024_080c500c",
+          "score": 0.032,
+          "section": "ELASTIC PRESSURE",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## ELASTIC PRESSURE  The closed membrane of the vesicle is simulated with an area constraint, see Eq. S7. However, deforming a planar membrane is impossible without a change of its area. To study the curvature dependence of the interplay between the elastic pressure and the active swim pressure as d"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0016_2693b654",
+          "score": 0.0305,
+          "section": "SHAPE ORDER PARAMETERS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## SHAPE ORDER PARAMETERS  We used a combination of order parameters to classify the vesicle shapes into prolate, oblate and stomatocyte.  The classification is based on the shape tensor Q αβ , which is defined by the positions of the N vertices of the membrane mesh:  where r iα is the Cartesian com"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0002_0ca6e62f",
+          "score": 0.0301,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "[FIGURE: fig_1] Caption: Description: FIG. S2. The self-propulsion velocity and barrier height at sphere-prolate coexistence depend on the translational diffusion constant of the particles. Generalized free energy -log P ( V ) for different values of the particles' translational diffusion constant D"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0029_90d3316f",
+          "score": 0.0299,
+          "section": "FFS SIMULATIONS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## FFS SIMULATIONS  We use Forward Flux Sampling (FFS) to enhance the sampling of the rare transition between the (nearly) spherical shape and the distinctly prolate shape when the volume of the vesicle is allowed to vary freely, see [FIG_REF: fig_0] of the main text [13]. To enhance the sampling, F"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0003_fc77fbc5",
+          "score": 0.0299,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "[FIGURE: tab_0] Caption: TABLE S1 . Description: Baseline parameter values for the simulations of the vesicle containing the active particles (Figs. 1, 3 and 4 of the main text). For the phase diagram of the vesicle in which both the area and volume are constrained (Fig. 1a main text),"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0005_4090576e",
+          "score": 0.0294,
+          "section": "",
+          "chunk_type": "table",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "[TABLE_DATA: tab_1] Caption: Content: Parameter\tDescription\tValue Active particles Dt\tTranslational diffusion constant\t0.1µm 2 /s Dr\tRotational diffusion constant\t1/s kpp\tStiffness interaction potential\t10 6 kBT µm -2 σpp\tParticle diameter\t0.2µm v0\tSelf-propulsion velocity\tVaried systematically N\tNu"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0022_e8680081",
+          "score": 0.0292,
+          "section": "THE EFFECT OF EXCLUDED-VOLUME INTERACTIONS BETWEEN THE ACTIVE PARTICLES THE SWIM PRESSURE",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "To this end we recomputed the swim pressure generated by finite-sized particles between two sinusoidal surfaces. The set up is identical to that of [FIG_REF: fig_1] of the main text, including the membrane-particle interaction, except that the particles have an excludedvolume interaction with one an"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0018_247dafc9",
+          "score": 0.0292,
+          "section": "SHAPE ORDER PARAMETERS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "It characterizes how far a shape deviates from that of the ideal sphere. A vesicle was identified as a stomatocyte when A < 0.1 and its reduced volume is V < 0.7. The reduced volume criterion allows us to distinguish between fairly spherical vesicles with a large reduced volume and stomatocytes, whi"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0001_1c4f2777",
+          "score": 0.0291,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "[FIGURE: fig_0] Caption: Description: FIG.S1. Excluded volume interactions between the active particles lower the swim pressure but do not change scaling of the swim pressure with membrane curvature. a The swim-pressure difference ∆pswim for particles between the outer and inner apices of a sinusoid"
+        }
+      ]
+    },
+    {
+      "query": "What is the Forward Flux Sampling (FFS) method used to compute in this study?",
+      "reference_answer": "FFS is used to enhance sampling of rare transitions of vesicles from near-spherical to distinctly prolate shapes, calculating rate constants and free energy landscapes under freely varying volume. Reduced volume is used as an order parameter, driving the system over barriers through a series of interfaces.",
+      "candidates": [
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0032_fe9cc565",
+          "score": 0.032,
+          "section": "FFS SIMULATIONS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "To compute the stationary distribution P ( V ) we perform a series of FFS simulation in the forward direction from A (prolate) to B (sphere) and another one in the reverse direction, from B to A [16]. These two FFS simulations make it possible to compute P ( V ) via"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0020_84f39bed",
+          "score": 0.0284,
+          "section": "TABLE S2.",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## TABLE S2.  Simulation parameter values for the computation of the swim pressure as a function of the curvature, corresponding to [FIG_REF: fig_1] of the main text.  cles do not interact with each other yet do interact with the wall with a force  2 is the interaction potential between particle i w"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0016_2693b654",
+          "score": 0.0281,
+          "section": "SHAPE ORDER PARAMETERS",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## SHAPE ORDER PARAMETERS  We used a combination of order parameters to classify the vesicle shapes into prolate, oblate and stomatocyte.  The classification is based on the shape tensor Q αβ , which is defined by the positions of the N vertices of the membrane mesh:  where r iα is the Cartesian com"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0033_38116843",
+          "score": 0.0277,
+          "section": "S25)",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## S25)  Here ψ A ( V ) is the contribution to P ( V ) from the paths that start in A and either make it to B or return to A, while ψ B ( V ) is the contribution from paths in the opposite direction, starting in B and ending in either A or B. These contributions are given by  Here p A the steady-sta"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0041_38bbd9bd",
+          "score": 0.0164,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Noncircular Geometries. So far, we described dynamics of circularly confined active nematics. However, the developed experimental methods are more general and can be used to study dynamics in diverse confined geometries. To demonstrate their versatility, we confined active nematics within a disk wit"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0004_6deb7ebe",
+          "score": 0.0164,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "[FIGURE: tab_1] Caption: Description: The quantities p A and p B can be computed once the rate constants k AB and k BA have been computed with FFS, using p A k AB = p B k BA . The function τ + ( V ; λ 0 ) is given by τ"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0065_e3b9cfe6",
+          "score": 0.0161,
+          "section": "Methods",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Defects in the director field were found using a previously developed algorithm (15). Defect tracking errors for the dataset represented in [FIG_REF: fig_4] are shown in SI Appendix, Fig. S2."
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0013_e6912360",
+          "score": 0.0159,
+          "section": "Active particles",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "To simulate the membrane shape dynamics, we employ the dynamic triangulation method of Gompper et al. [2]. In this method, the membrane is discretised into a triangular mesh. Links between two vertices are described via a vertex-vertex interaction potential U vv ({q i }) [3] and, to model the fluidi"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0025_5173c7ff",
+          "score": 0.0156,
+          "section": "THE EFFECT OF THE TRANSLATIONAL DIFFUSION CONSTANT",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## THE EFFECT OF THE TRANSLATIONAL DIFFUSION CONSTANT"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0007_844aa417",
+          "score": 0.0154,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "Collective excitations in the form of topological defects are known to control the large-scale behavior of a broad class of equilibrium systems, and to be eventually responsible for a Kosterlitz-Thouless (KT) phase transition, as exhibited by the two-dimensional (2d) XY model [1][2][3]. As local sin"
+        }
+      ]
+    },
+    {
+      "query": "How is non-reciprocal interaction introduced in the two-dimensional XY model?",
+      "reference_answer": "By modifying the nearest-neighbor coupling with a weighting kernel g_σ(φ_ij) that depends on the orientation of spin i, where φ_ij is the angle between the direction of spin i and the bond direction. This breaks reciprocity. A smooth 'view-cone' kernel based on the Von Mises distribution, g_σ(φ)=exp(σ cos φ), is used, with σ controlling the degree of non-reciprocity.",
+      "candidates": [
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0000_46078c55",
+          "score": 0.0328,
+          "section": "",
+          "chunk_type": "title_abstract",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "# Nonreciprocal Interactions Reshape Topological Defect Annihilation  ## Abstract We show how nonreciprocal ferromagnetic interactions between neighboring planar spins in two dimensions, affect the behavior of topological defects. Nonreciprocity is introduced by weighting the coupling strength of th"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0011_234e53c6",
+          "score": 0.0302,
+          "section": "Active particles",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "The force on particle i is  , where the total energy U p ({r i }) of the particles is the sum of the particle-particle interaction energy U pp ({r i }) and the particle-vertex interaction energy U pv ({r i , q i }), which depends on the positions {r i } of the active particles and the positions {q i"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0035_ec4d829e",
+          "score": 0.0299,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". Our intricate scenario goes well beyond the isotropic annihilation of defects in the 2dXY model and appears to be robust and general, as it remains valid at the hydrodynamic level. It neither depends on the specific shape of the interaction kernel, as we have found an equivalence relation between "
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0011_3765ffd7",
+          "score": 0.0299,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "where γ is the damping coefficient, J the coupling, η a Gaussian white noise with zero mean and unit variance, and T the temperature of the bath to which the system is coupled (fixing k B ¼ 1). NR interactions are introduced by weighting the coupling between two neighboring spins, say i and j, accor"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0007_844aa417",
+          "score": 0.0281,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "Collective excitations in the form of topological defects are known to control the large-scale behavior of a broad class of equilibrium systems, and to be eventually responsible for a Kosterlitz-Thouless (KT) phase transition, as exhibited by the two-dimensional (2d) XY model [1][2][3]. As local sin"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0022_a5151be2",
+          "score": 0.0281,
+          "section": "(e).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "As NR interactions reshape defects, they strongly impact their annihilation dynamics. In the reciprocal 2dXY model, defects of opposite charge AEq at a distance R attract each other with a Coulomb force F ∼ q 2 =R that drives their annihilation at low T < T KT [5,9,15,16]. On a square lattice, T KT "
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0021_4c75858c",
+          "score": 0.028,
+          "section": "THE EFFECT OF EXCLUDED-VOLUME INTERACTIONS BETWEEN THE ACTIVE PARTICLES THE SWIM PRESSURE",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## THE EFFECT OF EXCLUDED-VOLUME INTERACTIONS BETWEEN THE ACTIVE PARTICLES THE SWIM PRESSURE  [FIG_REF: fig_1] of the main text shows that in 3D the swim pressure increases superlinearly with the membrane curvature while in 2D it increases linearly or even weakly sublinearly. The principal reason fo"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0033_664035b4",
+          "score": 0.028,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "To conclude, we have shown how NR interactions in the vision-cone spirit impact topological defects in a paradigmatic continuous spin system. Nonreciprocity breaks the parity and rotational symmetry of the 2dXY model and drives the system out of equilibrium. For slightly anisotropic vision cones, no"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0020_84f39bed",
+          "score": 0.0268,
+          "section": "TABLE S2.",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "## TABLE S2.  Simulation parameter values for the computation of the swim pressure as a function of the curvature, corresponding to [FIG_REF: fig_1] of the main text.  cles do not interact with each other yet do interact with the wall with a force  2 is the interaction potential between particle i w"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0030_47013d22",
+          "score": 0.0262,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". ( 3) provides the same annihilation times as the lattice model once rescaled by the 2dXY value; cf. black dots in [FIG_REF: fig_2](e). The continuum model also faithfully reproduces the asymmetry between the AE1 defects' kinetics during annihilation; cf. Figs. 3(f) and 3(g)."
+        }
+      ]
+    },
+    {
+      "query": "How does non-reciprocal interaction affect the shape of +1 topological defects?",
+      "reference_answer": "In the non-reciprocal XY model, the shape μ₊ of a +1 defect is subject to torque. The source (μ₊=0) is an unstable fixed point, while the sink (μ₊=π) is a stable attractor. The force ∝ σ (∇×S)_z due to non-reciprocity distorts the defect, eventually turning it into the sink shape.",
+      "candidates": [
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0000_46078c55",
+          "score": 0.0325,
+          "section": "",
+          "chunk_type": "title_abstract",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "# Nonreciprocal Interactions Reshape Topological Defect Annihilation  ## Abstract We show how nonreciprocal ferromagnetic interactions between neighboring planar spins in two dimensions, affect the behavior of topological defects. Nonreciprocity is introduced by weighting the coupling strength of th"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0010_d775ac5e",
+          "score": 0.0325,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "In this Letter we uncover the effect of NR interactions on topological defects. We start from an extension of the 2dXY model where a given spin interacts with its neighborhood in a way that depends on the individual state of the spin itself in a nonreciprocal way: interactions are stronger along the"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0014_7d3155ab",
+          "score": 0.0308,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "The 2dXY model features pointlike topological defects with integer charge, q, given by the winding number [4]. The local field around a q ¼ AE1 defect located at the origin is given by θ AE ðx; yÞ ¼ qatanðy=xÞ þ μ AE , where the integration constant μ AE physically represents its shape (see Figs. 1("
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0034_a6de7087",
+          "score": 0.0292,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". The impact of such rotational term is to twist the phase field and to discriminate defects according to their specific shape (on top of their charge), leading to a rich phenomenology for pair annihilation: the motion of AE1 defects is asymmetric, they can be speeded up or slowed down without alter"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0035_ec4d829e",
+          "score": 0.0289,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". Our intricate scenario goes well beyond the isotropic annihilation of defects in the 2dXY model and appears to be robust and general, as it remains valid at the hydrodynamic level. It neither depends on the specific shape of the interaction kernel, as we have found an equivalence relation between "
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0007_844aa417",
+          "score": 0.0288,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "Collective excitations in the form of topological defects are known to control the large-scale behavior of a broad class of equilibrium systems, and to be eventually responsible for a Kosterlitz-Thouless (KT) phase transition, as exhibited by the two-dimensional (2d) XY model [1][2][3]. As local sin"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0020_07f9529d",
+          "score": 0.0273,
+          "section": "(e).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "We now turn our attention on q ¼ -1 defects. [FIG_REF: fig_1](h) shows a stable q ¼ -1 defect in the absence of NR interactions, and Figs. 2(h)-2(k) show its time evolution at T ¼ 0, σ > 0. Here it is clear to see that the curl of the spin vector field initially has a clear quadrupolelike symmetry, "
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0035_42165809",
+          "score": 0.0264,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Motivated by the close relationship between topological defects and autonomous flows, we examined how the defect density depends on the confinement size. In bulk active nematics, active stresses generate topological defects, and their magnitude determines the preferred defect density. Reducing the"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0022_a5151be2",
+          "score": 0.0159,
+          "section": "(e).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "As NR interactions reshape defects, they strongly impact their annihilation dynamics. In the reciprocal 2dXY model, defects of opposite charge AEq at a distance R attract each other with a Coulomb force F ∼ q 2 =R that drives their annihilation at low T < T KT [5,9,15,16]. On a square lattice, T KT "
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0001_de2e5969",
+          "score": 0.0156,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "[FIGURE: fig_0] Caption: FIG. 1 . Description: FIG. 1. (a) Sketch of the nearest neighbors coupling: the isotropic reciprocal case, in blue, the sharp vision cone, in orange, and our smooth version, in green (using σ ¼ 5). (b)-(e) Four þ1 defects with different shapes μ þ . White dots show the defec"
+        }
+      ]
+    },
+    {
+      "query": "What is the effect of non-reciprocal interaction on the annihilation dynamics of +1 and -1 defects?",
+      "reference_answer": "For a pair of opposite-charge defects, if the +1 defect is a source (μ₊=0), annihilation is accelerated; if it is a sink (μ₊=π), annihilation is significantly slowed (up to 100 times the equilibrium time). Additionally, the motion of ±1 defects is asymmetric, with +1 defects moving faster. The negative defect produces a polarization axis that affects the direction of motion.",
+      "candidates": [
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0010_d775ac5e",
+          "score": 0.0315,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "In this Letter we uncover the effect of NR interactions on topological defects. We start from an extension of the 2dXY model where a given spin interacts with its neighborhood in a way that depends on the individual state of the spin itself in a nonreciprocal way: interactions are stronger along the"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0022_a5151be2",
+          "score": 0.0313,
+          "section": "(e).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "As NR interactions reshape defects, they strongly impact their annihilation dynamics. In the reciprocal 2dXY model, defects of opposite charge AEq at a distance R attract each other with a Coulomb force F ∼ q 2 =R that drives their annihilation at low T < T KT [5,9,15,16]. On a square lattice, T KT "
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0035_ec4d829e",
+          "score": 0.0307,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". Our intricate scenario goes well beyond the isotropic annihilation of defects in the 2dXY model and appears to be robust and general, as it remains valid at the hydrodynamic level. It neither depends on the specific shape of the interaction kernel, as we have found an equivalence relation between "
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0000_46078c55",
+          "score": 0.0306,
+          "section": "",
+          "chunk_type": "title_abstract",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "# Nonreciprocal Interactions Reshape Topological Defect Annihilation  ## Abstract We show how nonreciprocal ferromagnetic interactions between neighboring planar spins in two dimensions, affect the behavior of topological defects. Nonreciprocity is introduced by weighting the coupling strength of th"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0015_142cb4ee",
+          "score": 0.0303,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "To understand the effect of NR interactions on μ þ we analyze an isolated q ¼ þ1 defect. We observe that at zero temperature, the source and sink are stationary states. All intermediate defect shapes decay to a sink, shown for μ þ ¼ π=6 in Figs. 2(a)-2(d). By approximating the dynamics of θ close to"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0023_9df21b3f",
+          "score": 0.0294,
+          "section": "(e).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "To explore the annihilation process, we study a pair of defects of charge q ¼ AE1 and initial shapes μ AE at a distance R 0 . We create nontwisted configurations by initially imposing μ þ -μ -¼ π. As derived in SM [57], this constraint imposes a constant spin orientation along the segment joining th"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0024_39d0816f",
+          "score": 0.0293,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "## (a)-3(c).  A source, μ þ ¼ 0, can only be initially paired with a μ -¼ π defect that creates a symmetry axis along the coreto-core direction; see [FIG_REF: fig_2](a). Such symmetry provides a preferential annihilation pathway. As shown in [FIG_REF: fig_2](d), RðtÞ decays faster for larger values "
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0030_47013d22",
+          "score": 0.0292,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". ( 3) provides the same annihilation times as the lattice model once rescaled by the 2dXY value; cf. black dots in [FIG_REF: fig_2](e). The continuum model also faithfully reproduces the asymmetry between the AE1 defects' kinetics during annihilation; cf. Figs. 3(f) and 3(g)."
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0034_a6de7087",
+          "score": 0.0286,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". The impact of such rotational term is to twist the phase field and to discriminate defects according to their specific shape (on top of their charge), leading to a rich phenomenology for pair annihilation: the motion of AE1 defects is asymmetric, they can be speeded up or slowed down without alter"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0026_065657b9",
+          "score": 0.0285,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "For any other initial pair, the þ1 defect experiences a twist due to a nonvanishing f NR and its mobility strongly decreases, while the -1 defect grows an oblique symmetry axis that eventually curls to meet the þ1 defect core; see [FIG_REF: fig_2](c). Once the preferential path between the two PHYSI"
+        }
+      ]
+    },
+    {
+      "query": "How is the continuum description of the non-reciprocal XY model related to the Toner-Tu equations?",
+      "reference_answer": "The derived continuum equation ∂S/∂t = ΔS + σ̃(∇×S)×S + α(1-S²)S, where the (∇×S)×S term combines the self-advection term (S·∇)S and the self-anchoring term ∇|S|² from the Toner-Tu equation. This provides a microscopic link between non-reciprocal spin systems and flocking theory.",
+      "candidates": [
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0033_664035b4",
+          "score": 0.0318,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "To conclude, we have shown how NR interactions in the vision-cone spirit impact topological defects in a paradigmatic continuous spin system. Nonreciprocity breaks the parity and rotational symmetry of the 2dXY model and drives the system out of equilibrium. For slightly anisotropic vision cones, no"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0030_47013d22",
+          "score": 0.0318,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". ( 3) provides the same annihilation times as the lattice model once rescaled by the 2dXY value; cf. black dots in [FIG_REF: fig_2](e). The continuum model also faithfully reproduces the asymmetry between the AE1 defects' kinetics during annihilation; cf. Figs. 3(f) and 3(g)."
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0010_d775ac5e",
+          "score": 0.0306,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "In this Letter we uncover the effect of NR interactions on topological defects. We start from an extension of the 2dXY model where a given spin interacts with its neighborhood in a way that depends on the individual state of the spin itself in a nonreciprocal way: interactions are stronger along the"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0047_52e6fdcc",
+          "score": 0.0298,
+          "section": "Discussion and Conclusion",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Existing continuum theories of active nematics predict suppression of spontaneous flows below a critical length scale and activity threshold, density flux from high to low director curvature, and chaotic dynamics at high activity and large length scales, and predict regular circulating flows in the "
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0024_39d0816f",
+          "score": 0.0291,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "## (a)-3(c).  A source, μ þ ¼ 0, can only be initially paired with a μ -¼ π defect that creates a symmetry axis along the coreto-core direction; see [FIG_REF: fig_2](a). Such symmetry provides a preferential annihilation pathway. As shown in [FIG_REF: fig_2](d), RðtÞ decays faster for larger values "
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0009_5d479f63",
+          "score": 0.0288,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": "Nonreciprocal (NR) interactions provide an alternative route to conceive systems locally driven out of equilibrium. Indeed, the effective interactions between nonequilibrium agents generically violates the actio-reactio principle. Examples include microorganisms [29], social agents (decision making,"
+        },
+        {
+          "chunk_id": "doc_e058e2683ed47f8b_0004_6deb7ebe",
+          "score": 0.0265,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\LiTenWoldeCaptionMoviesSIReSub_2(1).pdf",
+          "text_preview": "[FIGURE: tab_1] Caption: Description: The quantities p A and p B can be computed once the rate constants k AB and k BA have been computed with FFS, using p A k AB = p B k BA . The function τ + ( V ; λ 0 ) is given by τ"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0014_07c4ce11",
+          "score": 0.025,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Taken together, these observations suggest that doubly periodic dynamics are a ubiquitous feature of confined active nematics that is not accounted for by the current theoretical models. In continuum theories of passive and active low molecular weight liquid crystals, defects can propagate through"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0012_c6c8ecb6",
+          "score": 0.0164,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". [53,56] and discussion in Supplemental Material (SM) [57] ]. This approach also allows to explore other ways of breaking the action-reaction principle. Since in the small φ regime g σ ðφÞ ∼ e -φ 2 =2σ -1 , σ plays the role of the inverse variance (higher σ values shrink the vision cone). The model"
+        },
+        {
+          "chunk_id": "doc_a025668036c1f6f0_0032_bae0c7ea",
+          "score": 0.0154,
+          "section": "(a)-3(c).",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\Nonreciprocal Interactions Reshape Topological Defect Annihilation.pdf",
+          "text_preview": ". Increasing σ, the coarsening remarkably slows down and the dynamic exponent also increases up to values above z ¼ 4; cf. gray dotted lines. This is directly related to the slower decay of the defect density n=L 2 ; cf. [FIG_REF: fig_3] ). As such, the steady state is typically defectless at such l"
+        }
+      ]
+    },
+    {
+      "query": "What kind of two-period dynamics are observed in moderately confined active nematics?",
+      "reference_answer": "In disks of diameter 100-200 μm, the system exhibits superimposed dynamics: a fast circulation period of about 10 s, with two +1/2 defects rotating around the center; a slow period of about 40-50 s, including defects spiraling inward causing the director field to become nearly circularly symmetric, followed by defect nucleation events at the boundary that produce a ±1/2 pair, resetting the configuration.",
+      "candidates": [
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0000_f8a29f29",
+          "score": 0.0315,
+          "section": "",
+          "chunk_type": "title",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "# Self-organized dynamics and the transition to turbulence of confined active nematics"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0015_9f723846",
+          "score": 0.0308,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". In bulk active nematic liquid crystals, motile defects drive turbulent-like dynamics. We show that confining a model experimental active nematic converts bulk chaotic motion into coherent circulatory flows. This observation suggests the possibility of exploiting geometric design to encode the spat"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0013_6aa36ec3",
+          "score": 0.0305,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Below a critical confinement size, we observe self-organized circular flows, which are a ubiquitous feature of diverse experimental systems (27)(28)(29)(30)(31). However, experimentally identified criteria for the onset of the circular flows are different from theoretical predictions. For a subset o"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0038_03d8521c",
+          "score": 0.0301,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "We examined an additional structural aspect of confined active nematics by plotting the time-averaged radial distribution of +1/2 defect density for different confinement sizes ([FIG_REF: fig_6]A). For moderately confined active nematics, the topological constraints gave rise to a defect density dis"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0043_c4ab7de3",
+          "score": 0.0296,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "(Fig. 9A and Movie S9). It remains an important question to determine how the annular width and curvature determines the structure of the self-organized flows. We also observed intriguing dynamics in active nematics confined within a rectangular box with a large aspect ratio (Fig. 9B and Movie S10)."
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0018_0ce1aae4",
+          "score": 0.0292,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". For intermediate confinements (100 µm to 200 µm), the active nematics formed two +1/2 defects typically arranged into an asymmetric double spiral configuration ([FIG_REF: fig_0]B, iii). This is distinct from passive nematics in which the director field features two static +1/2 defects oriented alo"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0041_38bbd9bd",
+          "score": 0.029,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Noncircular Geometries. So far, we described dynamics of circularly confined active nematics. However, the developed experimental methods are more general and can be used to study dynamics in diverse confined geometries. To demonstrate their versatility, we confined active nematics within a disk wit"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0052_4140905e",
+          "score": 0.0286,
+          "section": "Discussion and Conclusion",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "In summary, we demonstrated that confinement effectively transforms the chaotic dynamics of bulk 2D active nematics in multiple ways, inducing the formation of self-organized doubly periodic spatiotemporal patterns. These observations pave the way to controlling dynamics of active nematics by tuning"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0030_cacb27b4",
+          "score": 0.0286,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". The tempo-ral dynamics were no longer continuous and regular. Despite the loss of some structural order, we still observed fairly consistent circular rotations and intermittent buckling events. It is likely that the continuum approximation is no longer valid in this limit. Theory predicts that, fo"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0014_07c4ce11",
+          "score": 0.0285,
+          "section": "",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Taken together, these observations suggest that doubly periodic dynamics are a ubiquitous feature of confined active nematics that is not accounted for by the current theoretical models. In continuum theories of passive and active low molecular weight liquid crystals, defects can propagate through"
+        }
+      ]
+    },
+    {
+      "query": "How is the degree of circular flow order quantified in experiments on active nematics?",
+      "reference_answer": "Using the flow order parameter Φ(t)=⟨u·ê_θ/|u|⟩, where u is the velocity field from PIV and ê_θ is the angular unit vector. Φ=±1 indicates system-wide coherent circulation, Φ=0 indicates no net angular transport. The time-averaged |Φ| is used to measure the degree of circulation under different confinements.",
+      "candidates": [
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0032_1eb89144",
+          "score": 0.0323,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Φ = ±1 for system-scale coherent circular flows, while Φ = 0 indicates lack of net transport along the azimuthal direction (25,31). Temporal evolution of the flow order parameter confirms that weakly confined active nematics exhibited persistent circular flows that switched handedness on the time "
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0037_f369b05b",
+          "score": 0.0323,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Increasing the confinement size to the point where any additional defects appear immediately suppressed circular flows. This is in contrast to experiments where active nematics exhibited robust circular flows even in the presence of several additional defect pairs. Thus, theory predicts that the t"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0036_280dcd59",
+          "score": 0.0313,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Therefore, from a structural perspective, active nematics become unconfined above ∼ 200-µm confinements. In contrast, the dynamical signature of confinement, as manifested by the emergence of circular flows, persists for much weaker confinement, remaining even as the diameter is increased to ∼ 600"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0031_7737179e",
+          "score": 0.0299,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". In addition to the two topologically required +1/2 defects, at most times, the system contained several additional defect pairs, whose number fluctuated anywhere between 2 and 10 ([FIG_REF: fig_4]B). Except for short-term errors in defect tracking, the net charge of all defects added up to +1. Vis"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0041_38bbd9bd",
+          "score": 0.0299,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Noncircular Geometries. So far, we described dynamics of circularly confined active nematics. However, the developed experimental methods are more general and can be used to study dynamics in diverse confined geometries. To demonstrate their versatility, we confined active nematics within a disk wit"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0007_832aac00",
+          "score": 0.0296,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "[FIGURE: fig_5] Caption: Fig. 6 . Description: Fig. 6. Dynamical and structural criteria for the onset of circular flows. (A) Experimentally measured flow order parameter (black) and +1/2 defect density (blue) are averaged over sample lifetimes and plotted as a function of the confining disk diamete"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0066_57a58ceb",
+          "score": 0.0289,
+          "section": "Methods",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Processing of the Flow Field. The velocity field u was found by applying particle image velocimetry analysis to the fluorescently labeled microtubules using the MatLab plug-in PIVlab v1.43 (54). In typical PIV applications, the flow is quantified by following sparsely labeled, small, isotropic trace"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0028_e9a7b81f",
+          "score": 0.0288,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Our analysis assumes that activity is independent of microtubule density. The initial asymmetric spiral director field generated significant gradients of stress in the azimuthal direction, which, in turn, powered strong circular flows in the direction consistent with the hydrodynamic theory of ext"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0064_cdfa4a83",
+          "score": 0.0288,
+          "section": "Methods",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Image Processing of the Director Field. In contrast to previous studies, the high birefringence of SU8 photoresists precludes the use of the LC-PolScope to directly quantify the director field (15). Instead, the director field was extracted from fluorescence images. The nematic order tensor, Q = n ⊗"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0045_74dc13a6",
+          "score": 0.0282,
+          "section": "Discussion and Conclusion",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Persistent circular motion has been observed in a wide range of confined active matter systems ranging from clusters of motile eukaryotic cells, and dense bacterial suspensions, to synthetic motile colloids (27,31,(38)(39)(40)(41). All of these systems are characterized by a single time scale relate"
+        }
+      ]
+    },
+    {
+      "query": "What are the main differences between experiment and theory regarding defect density and the transition to circular flow?",
+      "reference_answer": "Theory predicts that the onset of circular flow coincides with an increase in effective defect density, i.e., circulation begins when confinement is below the bulk defect spacing. However, experiments show that the structural transition (defect density increase at ~200 μm) and the dynamical transition (disappearance of circular flow at ~600 μm) occur at different confinement diameters. Under weak confinement, circular flow can persist even with multiple excess defects.",
+      "candidates": [
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0007_832aac00",
+          "score": 0.0325,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "[FIGURE: fig_5] Caption: Fig. 6 . Description: Fig. 6. Dynamical and structural criteria for the onset of circular flows. (A) Experimentally measured flow order parameter (black) and +1/2 defect density (blue) are averaged over sample lifetimes and plotted as a function of the confining disk diamete"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0037_f369b05b",
+          "score": 0.0325,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Increasing the confinement size to the point where any additional defects appear immediately suppressed circular flows. This is in contrast to experiments where active nematics exhibited robust circular flows even in the presence of several additional defect pairs. Thus, theory predicts that the t"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0036_280dcd59",
+          "score": 0.0315,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Therefore, from a structural perspective, active nematics become unconfined above ∼ 200-µm confinements. In contrast, the dynamical signature of confinement, as manifested by the emergence of circular flows, persists for much weaker confinement, remaining even as the diameter is increased to ∼ 600"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0034_24f8ec8f",
+          "score": 0.0308,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "For intermediate confinements, dynamics consisted of periodic boundary nucleation and the slow collapse of the defect orbits superimposed on their rapid procession. Circular flows persisted for larger diameter disks in the weak confinement regime. Here defects nucleated both at the boundary and with"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0039_da18258f",
+          "score": 0.0305,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". In this regime, the measured probability distribution was flat within the interior of the disk, and decayed to almost zero upon approaching the boundary. The theoretical model captures both the sharp peak at strong confinements and the flattening of the distribution as the confinement diameter is "
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0040_ab41c167",
+          "score": 0.03,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Examining defect motion subsequent to the boundary nucleation provides some insight into the discrepancy between the theory and experiments. Initially, the instability grows perpendicular to the boundary. In isolation, a nucleated +1/2 defect would presumably continue to move toward the confinement "
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0028_e9a7b81f",
+          "score": 0.0297,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Our analysis assumes that activity is independent of microtubule density. The initial asymmetric spiral director field generated significant gradients of stress in the azimuthal direction, which, in turn, powered strong circular flows in the direction consistent with the hydrodynamic theory of ext"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0046_c4a1ac4b",
+          "score": 0.0292,
+          "section": "Discussion and Conclusion",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". The slow collapse of the +1/2 defect orbits drove the system toward a tightly wound, nearly circularly symmetric configuration. Once sufficiently circular, the material was reconfigured by a boundary-induced defect nucleation, initiating a subsequent cycle of the doubly periodic dynamics. Second, "
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0031_7737179e",
+          "score": 0.0274,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". In addition to the two topologically required +1/2 defects, at most times, the system contained several additional defect pairs, whose number fluctuated anywhere between 2 and 10 ([FIG_REF: fig_4]B). Except for short-term errors in defect tracking, the net charge of all defects added up to +1. Vis"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0008_702c5fac",
+          "score": 0.0264,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "[FIGURE: fig_6] Caption: Fig. 8 . Description: Fig. 8. Dynamics of boundary-nucleated defects. Structure of circularly confined defect-laden active nematic in a weak confinement regime (Movie S7). Enlargements show sequence of images showing a boundary-induced defect nucleation and its subsequent ro"
+        }
+      ]
+    },
+    {
+      "query": "How do active nematics maintain circular flow under weak confinement (diameter 400-600 μm)?",
+      "reference_answer": "Despite defect nucleation both in the interior and at boundaries leading to fluctuating defect numbers (2-10 excess defect pairs), the system maintains coherent circulation, with the flow order parameter Φ remaining at ±1 or -1 for tens of seconds to minutes, occasionally reversing chirality. Defects align predominantly along the flow, sustaining the active stress that drives circulation.",
+      "candidates": [
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0036_280dcd59",
+          "score": 0.0323,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Therefore, from a structural perspective, active nematics become unconfined above ∼ 200-µm confinements. In contrast, the dynamical signature of confinement, as manifested by the emergence of circular flows, persists for much weaker confinement, remaining even as the diameter is increased to ∼ 600"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0018_0ce1aae4",
+          "score": 0.0306,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". For intermediate confinements (100 µm to 200 µm), the active nematics formed two +1/2 defects typically arranged into an asymmetric double spiral configuration ([FIG_REF: fig_0]B, iii). This is distinct from passive nematics in which the director field features two static +1/2 defects oriented alo"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0002_1a9638bd",
+          "score": 0.0305,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "[FIGURE: fig_0] Caption: Fig. 1 . Description: Fig. 1. Active nematics in weak, intermediate, and strong confinement regimes. (A) Schematic of sample cell used to confine active nematic. A micropattern of cylindrical holes was imprinted into a photoresist layer bound to a microscope slide. Oil filli"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0008_702c5fac",
+          "score": 0.0305,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "[FIGURE: fig_6] Caption: Fig. 8 . Description: Fig. 8. Dynamics of boundary-nucleated defects. Structure of circularly confined defect-laden active nematic in a weak confinement regime (Movie S7). Enlargements show sequence of images showing a boundary-induced defect nucleation and its subsequent ro"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0037_f369b05b",
+          "score": 0.0296,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Increasing the confinement size to the point where any additional defects appear immediately suppressed circular flows. This is in contrast to experiments where active nematics exhibited robust circular flows even in the presence of several additional defect pairs. Thus, theory predicts that the t"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0038_03d8521c",
+          "score": 0.0284,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "We examined an additional structural aspect of confined active nematics by plotting the time-averaged radial distribution of +1/2 defect density for different confinement sizes ([FIG_REF: fig_6]A). For moderately confined active nematics, the topological constraints gave rise to a defect density dis"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0017_858e8d28",
+          "score": 0.0283,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "Using microfluidic technologies, we confined active nematics into circular geometries whose diameter ranged from 60 µm to 800 µm ([FIG_REF: fig_0]). For all confinements studied, microtubules exhibited parallel alignment to the boundaries, which ensured that the nematic director field contained topo"
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0032_1eb89144",
+          "score": 0.0282,
+          "section": "Experimental Results",
+          "chunk_type": "",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": ". Φ = ±1 for system-scale coherent circular flows, while Φ = 0 indicates lack of net transport along the azimuthal direction (25,31). Temporal evolution of the flow order parameter confirms that weakly confined active nematics exhibited persistent circular flows that switched handedness on the time "
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0006_4b5e6dca",
+          "score": 0.028,
+          "section": "",
+          "chunk_type": "figure",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "[FIGURE: fig_4] Caption: Fig. 4 .Fig. 5 . Description: Fig. 4. Active nematics in strong confinement. (A) Circulating fluorescently labeled microtubules confined to a 60-µm-diameter disk (Movie S4). (B) Time-averaged (25 s) flow and vorticity fields (vorticity scale Ω = ±0.19 s -1 )."
+        },
+        {
+          "chunk_id": "doc_d7dcc43048dc2563_0001_749d4e50",
+          "score": 0.0279,
+          "section": "",
+          "chunk_type": "abstract",
+          "source_path": "E:\\project\\RAG_TEACHER\\MODULAR-RAG-MCP-SERVER-main\\MODULAR-RAG-MCP-SERVER-main\\papers\\research\\opathalage-et-al-2019-self-organized-dynamics-and-the-transition-to-turbulence-of-confined-active-nematics.pdf",
+          "text_preview": "## Abstract We study how confinement transforms the chaotic dynamics of bulk microtubule-based active nematics into regular spatiotemporal patterns. For weak confinements in disks, multiple continuously nucleating and annihilating topological defects selforganize into persistent circular flows of ei"
+        }
+      ]
+    }
+  ]
+}

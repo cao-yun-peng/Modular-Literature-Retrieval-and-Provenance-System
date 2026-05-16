@@ -1,0 +1,114 @@
+# Modular RAG MCP Server - Configuration
+# This is the main configuration file for the MCP Server.
+# Edit this file to configure LLM, Embedding, VectorStore, and other services.
+
+# =============================================================================
+# LLM Configuration
+# =============================================================================
+llm:
+  provider: "deepseek"  # Options: openai, azure, ollama, deepseek
+  model: "deepseek-chat"
+  deployment_name: ""
+  azure_endpoint: ""  # Set your Azure OpenAI endpoint here
+  api_version: ""
+  api_key: "sk-3c5072c00a5546cb8976aa0a7cbbc320"  # Set your Azure OpenAI API key here or use AZURE_OPENAI_API_KEY env var
+  temperature: 0.0
+  max_tokens: 4096
+
+# =============================================================================
+# Embedding Configuration
+# =============================================================================
+embedding:
+  provider: "ollama"  # Options: openai, azure, ollama
+  model: "nomic-embed-text"
+  dimensions: 768    # text-embedding-ada-002 固定维度 (不传递给API, 仅用于验证)
+  base_url: "http://localhost:11434"
+  # Azure-specific settings (if provider is azure):
+  #azure_endpoint: ""  # Set your Azure OpenAI endpoint here
+  deployment_name: "nomic-embed-text"
+  #api_version: "2024-02-15-preview"
+  #api_key: "E3yWZ2GYTboLP6gpIaXWt5RhRerF9lE9fPK9x1lm0QZwvEVlfve7JQQJ99CBACNns7RXJ3w3AAABACOGHBuM"  # Set your Azure OpenAI API key here or use AZURE_OPENAI_API_KEY env var
+  # OpenAI-specific settings (if provider is openai):
+  # api_key: ${OPENAI_API_KEY}
+
+# =============================================================================
+# Vision LLM Configuration (for Image Captioning)
+# =============================================================================
+vision_llm:
+  enabled: true  # Set to true to enable vision capabilities
+  provider: "deepseek"  # Options: openai, azure, ollama
+  model: "deepseek-chat"  # Options: gpt-4o, gpt-4-vision-preview (OpenAI), llava (Ollama)
+  # Azure-specific settings (if provider is azure):
+  azure_endpoint: ""
+  deployment_name: "gpt-4o"
+  api_version: "2024-02-15-preview"
+  api_key: "sk-3c5072c00a5546cb8976aa0a7cbbc320"
+  # Ollama-specific settings (if provider is ollama):
+  # base_url: "http://localhost:11434"
+  max_image_size: 2048  # Max dimension (width/height) for image compression
+
+# =============================================================================
+# Vector Store Configuration
+# =============================================================================
+vector_store:
+  provider: "chroma"  # Options: chroma, qdrant, pinecone
+  persist_directory: "C:/Users/86135/AppData/Local/Temp/modular_rag_chroma"
+  collection_name: "knowledge_hub"
+
+# =============================================================================
+# Retrieval Configuration
+# =============================================================================
+retrieval:
+  dense_top_k: 20
+  sparse_top_k: 20
+  fusion_top_k: 10
+  rrf_k: 60  # RRF constant
+  reference_weight: 0.3  # 参考文献 chunk 召回降权系数 (0=排除, 1=不降权)
+
+# =============================================================================
+# Rerank Configuration
+# =============================================================================
+rerank:
+  enabled: true
+  provider: "llm"  # Options: none, cross_encoder, llm
+  model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  top_k: 5
+
+# =============================================================================
+# Evaluation Configuration
+# =============================================================================
+evaluation:
+  enabled: true
+  provider: "custom"  # Options: ragas, deepeval, custom
+  metrics:
+    - "hit_rate"
+    - "mrr"
+   # - "faithfulness"
+
+# =============================================================================
+# Observability Configuration
+# =============================================================================
+observability:
+  log_level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
+  trace_enabled: true
+  trace_file: "C:/Users/86135/AppData/Local/Temp/modular_rag_traces/traces.jsonl"
+  structured_logging: true
+
+# =============================================================================
+# Ingestion Configuration
+# =============================================================================
+ingestion:
+  chunk_size: 1000
+  chunk_overlap: 200
+  splitter: "recursive"  # Options: recursive, semantic, fixed_length
+  batch_size: 100
+  
+  # Chunk Refiner Configuration (C5)
+  chunk_refiner:
+    use_llm: true  # Set to true to enable LLM-based refinement (requires LLM config)
+    # When use_llm is false or LLM call fails, falls back to rule-based refinement
+  
+  # Metadata Enricher Configuration (C6)
+  metadata_enricher:
+    use_llm: true   # Set to true to enable LLM-based enrichment (requires LLM config)
+    # When use_llm is false or LLM call fails, falls back to rule-based enrichment

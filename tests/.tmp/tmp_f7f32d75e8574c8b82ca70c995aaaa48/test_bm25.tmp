@@ -1,0 +1,516 @@
+{
+  "metadata": {
+    "num_docs": 100,
+    "avg_doc_length": 1.0,
+    "total_terms": 1,
+    "collection": "test"
+  },
+  "index": {
+    "common": {
+      "idf": -5.303304908059076,
+      "df": 100,
+      "postings": [
+        {
+          "chunk_id": "doc0",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc1",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc2",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc3",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc4",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc5",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc6",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc7",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc8",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc9",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc10",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc11",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc12",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc13",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc14",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc15",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc16",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc17",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc18",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc19",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc20",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc21",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc22",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc23",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc24",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc25",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc26",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc27",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc28",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc29",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc30",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc31",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc32",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc33",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc34",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc35",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc36",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc37",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc38",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc39",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc40",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc41",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc42",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc43",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc44",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc45",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc46",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc47",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc48",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc49",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc50",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc51",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc52",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc53",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc54",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc55",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc56",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc57",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc58",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc59",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc60",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc61",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc62",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc63",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc64",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc65",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc66",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc67",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc68",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc69",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc70",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc71",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc72",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc73",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc74",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc75",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc76",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc77",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc78",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc79",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc80",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc81",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc82",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc83",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc84",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc85",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc86",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc87",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc88",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc89",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc90",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc91",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc92",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc93",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc94",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc95",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc96",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc97",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc98",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc99",
+          "tf": 1,
+          "doc_length": 1
+        }
+      ]
+    }
+  }
+}

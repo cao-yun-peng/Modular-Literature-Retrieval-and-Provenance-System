@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "num_docs": 3,
+    "avg_doc_length": 1.3333333333333333,
+    "total_terms": 2,
+    "collection": "test"
+  },
+  "index": {
+    "rare": {
+      "idf": 0.5108256237659907,
+      "df": 1,
+      "postings": [
+        {
+          "chunk_id": "1",
+          "tf": 1,
+          "doc_length": 2
+        }
+      ]
+    },
+    "common": {
+      "idf": -1.9459101490553135,
+      "df": 3,
+      "postings": [
+        {
+          "chunk_id": "1",
+          "tf": 1,
+          "doc_length": 2
+        },
+        {
+          "chunk_id": "2",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "3",
+          "tf": 1,
+          "doc_length": 1
+        }
+      ]
+    }
+  }
+}

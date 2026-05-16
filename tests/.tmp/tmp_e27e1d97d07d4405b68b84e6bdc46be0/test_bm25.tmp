@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "num_docs": 3,
+    "avg_doc_length": 3.3333333333333335,
+    "total_terms": 3,
+    "collection": "test"
+  },
+  "index": {
+    "machine": {
+      "idf": -0.5108256237659907,
+      "df": 2,
+      "postings": [
+        {
+          "chunk_id": "relevant",
+          "tf": 3,
+          "doc_length": 5
+        },
+        {
+          "chunk_id": "partial",
+          "tf": 1,
+          "doc_length": 3
+        }
+      ]
+    },
+    "learning": {
+      "idf": 0.5108256237659907,
+      "df": 1,
+      "postings": [
+        {
+          "chunk_id": "relevant",
+          "tf": 2,
+          "doc_length": 5
+        }
+      ]
+    },
+    "python": {
+      "idf": 0.5108256237659907,
+      "df": 1,
+      "postings": [
+        {
+          "chunk_id": "irrelevant",
+          "tf": 2,
+          "doc_length": 2
+        }
+      ]
+    }
+  }
+}

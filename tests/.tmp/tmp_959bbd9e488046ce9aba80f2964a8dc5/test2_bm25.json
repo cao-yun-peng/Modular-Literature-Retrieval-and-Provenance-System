@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "num_docs": 2,
+    "avg_doc_length": 1.5,
+    "total_terms": 1,
+    "collection": "test2"
+  },
+  "index": {
+    "test": {
+      "idf": -1.6094379124341003,
+      "df": 2,
+      "postings": [
+        {
+          "chunk_id": "doc1",
+          "tf": 2,
+          "doc_length": 2
+        },
+        {
+          "chunk_id": "doc2",
+          "tf": 1,
+          "doc_length": 1
+        }
+      ]
+    }
+  }
+}

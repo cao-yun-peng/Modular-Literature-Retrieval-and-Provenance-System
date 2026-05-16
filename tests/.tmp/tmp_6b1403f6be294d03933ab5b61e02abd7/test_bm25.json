@@ -1,0 +1,32 @@
+{
+  "metadata": {
+    "num_docs": 1,
+    "avg_doc_length": 2.0,
+    "total_terms": 2,
+    "collection": "test"
+  },
+  "index": {
+    "hello-world": {
+      "idf": -1.0986122886681098,
+      "df": 1,
+      "postings": [
+        {
+          "chunk_id": "doc1",
+          "tf": 1,
+          "doc_length": 2
+        }
+      ]
+    },
+    "test_case": {
+      "idf": -1.0986122886681098,
+      "df": 1,
+      "postings": [
+        {
+          "chunk_id": "doc1",
+          "tf": 1,
+          "doc_length": 2
+        }
+      ]
+    }
+  }
+}

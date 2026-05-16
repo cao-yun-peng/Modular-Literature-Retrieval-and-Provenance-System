@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "num_docs": 10,
+    "avg_doc_length": 1.0,
+    "total_terms": 1,
+    "collection": "test"
+  },
+  "index": {
+    "test": {
+      "idf": -3.044522437723423,
+      "df": 10,
+      "postings": [
+        {
+          "chunk_id": "doc0",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc1",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc2",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc3",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc4",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc5",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc6",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc7",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc8",
+          "tf": 1,
+          "doc_length": 1
+        },
+        {
+          "chunk_id": "doc9",
+          "tf": 1,
+          "doc_length": 1
+        }
+      ]
+    }
+  }
+}

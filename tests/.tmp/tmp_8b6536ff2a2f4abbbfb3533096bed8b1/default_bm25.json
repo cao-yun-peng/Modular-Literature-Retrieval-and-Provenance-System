@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "num_docs": 1,
+    "avg_doc_length": 8.0,
+    "total_terms": 1,
+    "collection": "default"
+  },
+  "index": {
+    "hello": {
+      "idf": -1.0986122886681098,
+      "df": 1,
+      "postings": [
+        {
+          "chunk_id": "docB_c0",
+          "tf": 1,
+          "doc_length": 8
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,34 @@
+embedding:
+  dimensions: 768
+  model: fake-emb
+evaluation:
+  enabled: false
+  metrics:
+  - hit_rate
+ingestion:
+  batch_size: 100
+  chunk_overlap: 200
+  chunk_size: 1000
+  splitter: recursive
+llm:
+  max_tokens: 1000
+  model: fake-model
+  temperature: 0.0
+observability:
+  log_level: INFO
+  structured_logging: false
+  trace_enabled: false
+  trace_file: C:/test_runtime/traces/traces.jsonl
+rerank:
+  enabled: false
+  model: test
+  top_k: 5
+retrieval:
+  dense_top_k: 10
+  fusion_top_k: 5
+  reference_weight: 0.3
+  rrf_k: 60
+  sparse_top_k: 10
+vector_store:
+  collection_name: test
+  persist_directory: C:/test_runtime/chroma
