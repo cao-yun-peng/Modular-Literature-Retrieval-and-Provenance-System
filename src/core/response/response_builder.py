@@ -36,6 +36,7 @@ class MCPToolResponse:
     is_empty: bool = False
     image_contents: List[types.ImageContent] = field(default_factory=list)
     table_contents: List[TableContent] = field(default_factory=list)
+    evidence_bundle: Optional[Dict[str, Any]] = None
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for MCP protocol.
@@ -50,6 +51,7 @@ class MCPToolResponse:
                 "tables": [t.to_dict() for t in self.table_contents],
                 "metadata": self.metadata,
                 "isEmpty": self.is_empty,
+                "evidenceBundle": self.evidence_bundle,
             }
         }
     
@@ -84,6 +86,7 @@ class MCPToolResponse:
                 "metadata": self.metadata,
                 "has_images": len(self.image_contents) > 0,
                 "image_count": len(self.image_contents),
+                "evidenceBundle": self.evidence_bundle,
             }
             blocks.append(
                 types.TextContent(

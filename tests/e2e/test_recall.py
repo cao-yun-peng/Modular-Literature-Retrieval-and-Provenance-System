@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -29,10 +30,11 @@ logger = logging.getLogger(__name__)
 
 GOLDEN_TEST_SET_PATH = Path("tests/fixtures/golden_test_set.json")
 
-# Minimum acceptable thresholds for regression gating.
-# These are intentionally set conservatively – update as data improves.
-HIT_RATE_THRESHOLD = 0.0  # Minimum average hit_rate (0.0 = no regression check until data exists)
-MRR_THRESHOLD = 0.0  # Minimum average MRR
+# Quality gates must be supplied from a measured, reviewed baseline. An absent
+# threshold skips the gate instead of creating a misleading always-green 0.0
+# assertion.
+HIT_RATE_THRESHOLD = os.getenv("RAG_EVAL_MIN_HIT_RATE")
+MRR_THRESHOLD = os.getenv("RAG_EVAL_MIN_MRR")
 
 
 # ── Helpers ───────────────────────────────────────────────────────────
@@ -110,6 +112,10 @@ class TestRecallRegression:
         else 0.  Averaged across all test cases that have
         expected_chunk_ids defined.
         """
+        if HIT_RATE_THRESHOLD is None:
+            pytest.skip("Set RAG_EVAL_MIN_HIT_RATE to enable the Hit Rate gate")
+        threshold = float(HIT_RATE_THRESHOLD)
+
         cases_with_ground_truth = [
             tc for tc in self.golden_set
             if tc.get("expected_chunk_ids")
@@ -150,10 +156,10 @@ class TestRecallRegression:
 
         avg_hit_rate = sum(hit_rates) / len(hit_rates) if hit_rates else 0.0
 
-        logger.info("Average hit@%d = %.4f (threshold=%.4f)", top_k, avg_hit_rate, HIT_RATE_THRESHOLD)
+        logger.info("Average hit@%d = %.4f (threshold=%.4f)", top_k, avg_hit_rate, threshold)
 
-        assert avg_hit_rate >= HIT_RATE_THRESHOLD, (
-            f"hit@{top_k} regression: {avg_hit_rate:.4f} < {HIT_RATE_THRESHOLD:.4f}"
+        assert avg_hit_rate >= threshold, (
+            f"hit@{top_k} regression: {avg_hit_rate:.4f} < {threshold:.4f}"
         )
 
     def test_mrr_above_threshold(self) -> None:
@@ -162,6 +168,10 @@ class TestRecallRegression:
         MRR = 1/rank of the first relevant chunk.  Averaged across
         all test cases with expected_chunk_ids.
         """
+        if MRR_THRESHOLD is None:
+            pytest.skip("Set RAG_EVAL_MIN_MRR to enable the MRR gate")
+        threshold = float(MRR_THRESHOLD)
+
         cases_with_ground_truth = [
             tc for tc in self.golden_set
             if tc.get("expected_chunk_ids")
@@ -200,10 +210,10 @@ class TestRecallRegression:
 
         avg_mrr = sum(mrrs) / len(mrrs) if mrrs else 0.0
 
-        logger.info("Average MRR = %.4f (threshold=%.4f)", avg_mrr, MRR_THRESHOLD)
+        logger.info("Average MRR = %.4f (threshold=%.4f)", avg_mrr, threshold)
 
-        assert avg_mrr >= MRR_THRESHOLD, (
-            f"MRR regression: {avg_mrr:.4f} < {MRR_THRESHOLD:.4f}"
+        assert avg_mrr >= threshold, (
+            f"MRR regression: {avg_mrr:.4f} < {threshold:.4f}"
         )
 
     def test_all_queries_return_results(self) -> None:

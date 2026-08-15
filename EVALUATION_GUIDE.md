@@ -2,6 +2,8 @@
 
 > 如何系统性地评估 Modular RAG MCP Server 的检索质量
 
+> **P0 改造提示（2026-08-14）**：评测执行器的最新行为、质量门禁和运行产物请以 [`docs/EVALUATION_USER_MANUAL.md`](docs/EVALUATION_USER_MANUAL.md) 为准；实施内容与兼容性变化见 [`docs/EVALUATION_P0_IMPLEMENTATION_REPORT.md`](docs/EVALUATION_P0_IMPLEMENTATION_REPORT.md)。本文保留为原有评测设计背景，其中 `--no-search`、默认 0 阈值和伪答案回退等旧说明已不再适用。
+
 ---
 
 ## 目录

@@ -137,10 +137,20 @@ class TestToolMetadata:
         assert "properties" in TOOL_INPUT_SCHEMA
         assert "required" in TOOL_INPUT_SCHEMA
     
-    def test_tool_input_schema_doc_id_required(self):
-        """Test doc_id is a required parameter."""
-        assert "doc_id" in TOOL_INPUT_SCHEMA["required"]
+    def test_tool_input_schema_accepts_three_identity_types(self):
+        """Exactly one supported source identity is required by anyOf."""
+        assert TOOL_INPUT_SCHEMA["required"] == []
         assert "doc_id" in TOOL_INPUT_SCHEMA["properties"]
+        assert "zotero_item_key" in TOOL_INPUT_SCHEMA["properties"]
+        assert "citation_key" in TOOL_INPUT_SCHEMA["properties"]
+        required_variants = {
+            tuple(variant["required"]) for variant in TOOL_INPUT_SCHEMA["anyOf"]
+        }
+        assert required_variants == {
+            ("doc_id",),
+            ("zotero_item_key",),
+            ("citation_key",),
+        }
     
     def test_tool_input_schema_collection_optional(self):
         """Test collection is an optional parameter."""

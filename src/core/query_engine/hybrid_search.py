@@ -254,6 +254,12 @@ class HybridSearch:
         
         # Merge explicit filters with query-extracted filters
         merged_filters = self._merge_filters(processed_query.filters, filters)
+        # ``collection`` is a routing key: the sparse retriever uses it to
+        # select an index, while the dense retriever is already bound to a
+        # concrete vector-store collection. It is not guaranteed to be copied
+        # into every chunk's metadata and must not be applied as a metadata
+        # predicate or post-filter.
+        metadata_filters = self._metadata_only_filters(merged_filters)
         
         # Step 2: Run retrievals
         dense_results, sparse_results, dense_error, sparse_error = self._run_retrievals(
@@ -293,8 +299,8 @@ class HybridSearch:
             )
         
         # Step 5: Apply post-fusion metadata filters (if any)
-        if merged_filters and self.config.metadata_filter_post:
-            fused_results = self._apply_metadata_filters(fused_results, merged_filters)
+        if metadata_filters and self.config.metadata_filter_post:
+            fused_results = self._apply_metadata_filters(fused_results, metadata_filters)
 
         # Step 5.5: Apply reference chunk demotion
         fused_results = self._apply_reference_demotion(fused_results)
@@ -358,6 +364,13 @@ class HybridSearch:
         if explicit_filters:
             merged.update(explicit_filters)
         return merged
+
+    @staticmethod
+    def _metadata_only_filters(filters: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+        """Remove routing-only keys before vector and post metadata filtering."""
+        if not filters:
+            return {}
+        return {key: value for key, value in filters.items() if key != "collection"}
     
     def _run_retrievals(
         self,
@@ -386,6 +399,7 @@ class HybridSearch:
         sparse_results: Optional[List[RetrievalResult]] = None
         dense_error: Optional[str] = None
         sparse_error: Optional[str] = None
+        dense_filters = self._metadata_only_filters(filters)
         
         # Determine what to run
         run_dense = (
@@ -407,14 +421,14 @@ class HybridSearch:
         
         if self.config.parallel_retrieval and run_dense and run_sparse:
             # Run in parallel
-            dense_results, sparse_results, dense_error, sparse_error = (
+                dense_results, sparse_results, dense_error, sparse_error = (
                 self._run_parallel_retrievals(processed_query, filters, trace)
             )
         else:
             # Run sequentially
             if run_dense:
                 dense_results, dense_error = self._run_dense_retrieval(
-                    processed_query.original_query, filters, trace
+                    processed_query.original_query, dense_filters, trace
                 )
             
             if run_sparse:
@@ -449,6 +463,7 @@ class HybridSearch:
         sparse_results: Optional[List[RetrievalResult]] = None
         dense_error: Optional[str] = None
         sparse_error: Optional[str] = None
+        dense_filters = self._metadata_only_filters(filters)
         
         with ThreadPoolExecutor(max_workers=2) as executor:
             futures = {}
@@ -457,7 +472,7 @@ class HybridSearch:
             futures['dense'] = executor.submit(
                 self._run_dense_retrieval,
                 processed_query.original_query,
-                filters,
+                dense_filters,
                 trace,
             )
             

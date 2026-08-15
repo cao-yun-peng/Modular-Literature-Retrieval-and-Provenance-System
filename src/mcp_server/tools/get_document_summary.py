@@ -52,8 +52,21 @@ TOOL_INPUT_SCHEMA: Dict[str, Any] = {
             "type": "string",
             "description": "Collection name to search in. If not specified, searches the default collection.",
         },
+        "zotero_item_key": {
+            "type": "string",
+            "description": "Zotero Item Key mapped during source synchronization.",
+        },
+        "citation_key": {
+            "type": "string",
+            "description": "Citation Key mapped during source synchronization.",
+        },
     },
-    "required": ["doc_id"],
+    "required": [],
+    "anyOf": [
+        {"required": ["doc_id"]},
+        {"required": ["zotero_item_key"]},
+        {"required": ["citation_key"]},
+    ],
 }
 
 
@@ -305,11 +318,39 @@ class GetDocumentSummaryTool:
         
         # No chunks found
         return []
+
+    def _find_document_chunks_by_metadata(
+        self,
+        field_name: str,
+        value: str,
+        collection_name: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        collection = self._get_collection(collection_name)
+        try:
+            results = collection.get(
+                where={field_name: value},
+                include=["metadatas", "documents"],
+            )
+        except Exception as exc:
+            logger.debug("metadata identity search failed: %s", exc)
+            return []
+        chunks = []
+        for index, chunk_id in enumerate(results.get("ids") or []):
+            chunks.append(
+                {
+                    "id": chunk_id,
+                    "text": (results.get("documents") or [""])[index],
+                    "metadata": (results.get("metadatas") or [{}])[index],
+                }
+            )
+        return chunks
     
     def get_document_summary(
         self,
-        doc_id: str,
+        doc_id: Optional[str] = None,
         collection: Optional[str] = None,
+        zotero_item_key: Optional[str] = None,
+        citation_key: Optional[str] = None,
     ) -> DocumentSummary:
         """Get summary for a specific document.
         
@@ -323,10 +364,27 @@ class GetDocumentSummaryTool:
         Raises:
             DocumentNotFoundError: If document is not found.
         """
-        chunks = self._find_document_chunks(doc_id, collection)
+        provided = [
+            ("doc_id", doc_id),
+            ("zotero_item_key", zotero_item_key),
+            ("citation_key", citation_key),
+        ]
+        selected = [(name, value.strip()) for name, value in provided if value and value.strip()]
+        if len(selected) != 1:
+            raise ValueError(
+                "Provide exactly one of doc_id, zotero_item_key, or citation_key"
+            )
+        identity_type, identity_value = selected[0]
+        chunks = (
+            self._find_document_chunks(identity_value, collection)
+            if identity_type == "doc_id"
+            else self._find_document_chunks_by_metadata(
+                identity_type, identity_value, collection
+            )
+        )
         
         if not chunks:
-            raise DocumentNotFoundError(doc_id, collection)
+            raise DocumentNotFoundError(identity_value, collection)
         
         # Sort chunks by chunk_index if available
         chunks.sort(key=lambda c: c.get('metadata', {}).get('chunk_index', 0))
@@ -345,13 +403,24 @@ class GetDocumentSummaryTool:
         tags = self._extract_tags(metadata)
         
         # Extract source path
-        source_path = metadata.get('source_path', metadata.get('source', None))
+        source_path = (
+            None
+            if metadata.get("source_type") == "zotero"
+            else metadata.get('source_path', metadata.get('source', None))
+        )
         
         # Collect additional metadata (excluding internal fields)
         additional_metadata = self._filter_metadata(metadata)
+        additional_metadata["lookup_identity"] = identity_type
+        additional_metadata["can_handoff_to_zotero_fulltext"] = bool(
+            metadata.get("zotero_attachment_key")
+        )
+        resolved_doc_id = str(
+            metadata.get("document_id", metadata.get("source_ref", identity_value))
+        )
         
         return DocumentSummary(
-            doc_id=doc_id,
+            doc_id=resolved_doc_id,
             title=title,
             summary=summary,
             tags=tags,
@@ -552,8 +621,10 @@ class GetDocumentSummaryTool:
     
     async def execute(
         self,
-        doc_id: str,
+        doc_id: Optional[str] = None,
         collection: Optional[str] = None,
+        zotero_item_key: Optional[str] = None,
+        citation_key: Optional[str] = None,
     ) -> types.CallToolResult:
         """Execute the get_document_summary tool.
         
@@ -564,13 +635,17 @@ class GetDocumentSummaryTool:
         Returns:
             CallToolResult with formatted document summary or error.
         """
-        logger.info(f"Executing get_document_summary (doc_id={doc_id}, collection={collection})")
+        logger.info("Executing get_document_summary (collection=%s)", collection)
         
         try:
             # Run blocking ChromaDB I/O in a thread to avoid blocking
             # the async event loop / MCP stdio transport
             summary = await asyncio.to_thread(
-                self.get_document_summary, doc_id, collection,
+                self.get_document_summary,
+                doc_id,
+                collection,
+                zotero_item_key,
+                citation_key,
             )
             response_text = self.format_response(summary)
             
@@ -621,11 +696,18 @@ def register_tool(protocol_handler: ProtocolHandler) -> None:
     tool = GetDocumentSummaryTool()
     
     async def handler(
-        doc_id: str,
+        doc_id: Optional[str] = None,
         collection: Optional[str] = None,
+        zotero_item_key: Optional[str] = None,
+        citation_key: Optional[str] = None,
     ) -> types.CallToolResult:
         """Handler function for MCP tool calls."""
-        return await tool.execute(doc_id=doc_id, collection=collection)
+        return await tool.execute(
+            doc_id=doc_id,
+            collection=collection,
+            zotero_item_key=zotero_item_key,
+            citation_key=citation_key,
+        )
     
     protocol_handler.register_tool(
         name=TOOL_NAME,

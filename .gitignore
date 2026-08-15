@@ -45,6 +45,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+tests/.tmp/
 
 # Translations
 *.mo
@@ -91,6 +92,7 @@ cache/
 logs/
 *.log
 traces.jsonl
+.understand-anything/
 
 # Secrets
 .env.local

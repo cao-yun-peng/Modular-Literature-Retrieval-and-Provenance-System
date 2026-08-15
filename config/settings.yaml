@@ -11,7 +11,7 @@ llm:
   deployment_name: ""
   azure_endpoint: ""  # Set your Azure OpenAI endpoint here
   api_version: ""
-  api_key: "sk-3c5072c00a5546cb8976aa0a7cbbc320"  # Set your Azure OpenAI API key here or use AZURE_OPENAI_API_KEY env var
+  api_key: ${DEEPSEEK_API_KEY}
   temperature: 0.0
   max_tokens: 4096
 
@@ -27,7 +27,7 @@ embedding:
   #azure_endpoint: ""  # Set your Azure OpenAI endpoint here
   deployment_name: "nomic-embed-text"
   #api_version: "2024-02-15-preview"
-  #api_key: "E3yWZ2GYTboLP6gpIaXWt5RhRerF9lE9fPK9x1lm0QZwvEVlfve7JQQJ99CBACNns7RXJ3w3AAABACOGHBuM"  # Set your Azure OpenAI API key here or use AZURE_OPENAI_API_KEY env var
+  # api_key: ${AZURE_OPENAI_API_KEY}
   # OpenAI-specific settings (if provider is openai):
   # api_key: ${OPENAI_API_KEY}
 
@@ -35,14 +35,14 @@ embedding:
 # Vision LLM Configuration (for Image Captioning)
 # =============================================================================
 vision_llm:
-  enabled: true  # Set to true to enable vision capabilities
-  provider: "deepseek"  # Options: openai, azure, ollama
-  model: "deepseek-chat"  # Options: gpt-4o, gpt-4-vision-preview (OpenAI), llava (Ollama)
+  enabled: false  # Enable after configuring a supported vision provider
+  provider: "azure"  # Options: azure
+  model: "gpt-4o"
   # Azure-specific settings (if provider is azure):
   azure_endpoint: ""
   deployment_name: "gpt-4o"
   api_version: "2024-02-15-preview"
-  api_key: "sk-3c5072c00a5546cb8976aa0a7cbbc320"
+  api_key: ${AZURE_OPENAI_API_KEY}
   # Ollama-specific settings (if provider is ollama):
   # base_url: "http://localhost:11434"
   max_image_size: 2048  # Max dimension (width/height) for image compression
@@ -52,7 +52,7 @@ vision_llm:
 # =============================================================================
 vector_store:
   provider: "chroma"  # Options: chroma, qdrant, pinecone
-  persist_directory: "C:/Users/86135/AppData/Local/Temp/modular_rag_chroma"
+  persist_directory: "${MODULAR_RAG_DATA_DIR:-data}/chroma"
   collection_name: "knowledge_hub"
 
 # =============================================================================
@@ -64,6 +64,8 @@ retrieval:
   fusion_top_k: 10
   rrf_k: 60  # RRF constant
   reference_weight: 0.3  # 参考文献 chunk 召回降权系数 (0=排除, 1=不降权)
+  candidate_multiplier: 2  # Rerank/范围过滤前的候选池倍率
+  candidate_max: 100
 
 # =============================================================================
 # Rerank Configuration
@@ -73,6 +75,8 @@ rerank:
   provider: "llm"  # Options: none, cross_encoder, llm
   model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
   top_k: 5
+  strategy: "replace"  # replace 保持旧行为；conservative 需评测后再启用
+  rrf_weight: 0.5
 
 # =============================================================================
 # Evaluation Configuration
@@ -83,6 +87,9 @@ evaluation:
   metrics:
     - "hit_rate"
     - "mrr"
+    - "precision_at_k"
+    - "recall_at_k"
+    - "ndcg_at_k"
    # - "faithfulness"
 
 # =============================================================================
@@ -91,8 +98,9 @@ evaluation:
 observability:
   log_level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
   trace_enabled: true
-  trace_file: "C:/Users/86135/AppData/Local/Temp/modular_rag_traces/traces.jsonl"
+  trace_file: "${MODULAR_RAG_TRACE_DIR:-data/traces}/traces.jsonl"
   structured_logging: true
+  include_content: false  # 默认 Trace 仅保存 ID/分数，不复制私有论文正文
 
 # =============================================================================
 # Ingestion Configuration
@@ -112,3 +120,40 @@ ingestion:
   metadata_enricher:
     use_llm: true   # Set to true to enable LLM-based enrichment (requires LLM config)
     # When use_llm is false or LLM call fails, falls back to rule-based enrichment
+
+  hierarchical_chunking:
+    enabled: false  # 新 collection 验证通过后再开启，避免与 v1 chunk schema 混写
+    child_size: 350
+    child_overlap: 50
+    parent_size: 1200
+    section_store_db: "${MODULAR_RAG_DATA_DIR:-data}/db/section_store.sqlite3"
+    corpus_schema_version: "2.0"
+
+# =============================================================================
+# Optional Zotero source and Agent evidence handoff
+# =============================================================================
+sources:
+  zotero:
+    enabled: true
+    base_url: "http://127.0.0.1:23119"
+    request_timeout_seconds: 10
+    read_only: true
+    sync_state_db: "${MODULAR_RAG_DATA_DIR:-data}/state/zotero_sync.sqlite3"
+    # 空列表表示信任 Zotero Local API 返回的本机附件路径；生产环境建议显式配置。
+    allowed_attachment_roots: []
+
+agent_handoff:
+  enabled: false
+  fulltext_provider: "zotero_plugin"
+  global_reading_handoff: true
+  low_coverage_handoff: true
+  low_score_threshold: 0.01
+  max_recommended_documents: 3
+
+evidence:
+  expand_context: "adaptive"
+  include_score_breakdown: true
+  include_zotero_identity: true
+  require_source_locator: false
+  max_context_characters: 6000
+  deduplicate: false  # v2 评测通过后再开启 Parent 配额去重

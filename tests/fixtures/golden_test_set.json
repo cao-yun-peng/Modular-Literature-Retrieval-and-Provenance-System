@@ -62,8 +62,11 @@
     },
     {
       "query": "How do active nematics maintain circular flow under weak confinement (diameter 400-600 μm)?",
-      "expected_chunk_ids": ["doc_e058e2683ed47f8b_0029_90d3316f",
-  "doc_e058e2683ed47f8b_0032_fe9cc565"],
+      "expected_chunk_ids": [
+        "doc_d7dcc43048dc2563_0031_7737179e",
+        "doc_d7dcc43048dc2563_0032_1eb89144",
+        "doc_d7dcc43048dc2563_0040_ab41c167"
+      ],
       "reference_answer": "Despite defect nucleation both in the interior and at boundaries leading to fluctuating defect numbers (2-10 excess defect pairs), the system maintains coherent circulation, with the flow order parameter Φ remaining at ±1 or -1 for tens of seconds to minutes, occasionally reversing chirality. Defects align predominantly along the flow, sustaining the active stress that drives circulation."
     }
   ]

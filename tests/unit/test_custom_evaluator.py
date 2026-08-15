@@ -42,8 +42,48 @@ class TestCustomEvaluator:
         with pytest.raises(ValueError, match="Query cannot be empty"):
             evaluator.evaluate("  ", [{"id": "x"}], ground_truth=["x"])
 
-        with pytest.raises(ValueError, match="retrieved_chunks cannot be empty"):
-            evaluator.evaluate("query", [], ground_truth=["x"])
+        assert evaluator.evaluate("query", [], ground_truth=["x"])["hit_rate"] == 0.0
+
+        with pytest.raises(ValueError, match="ground-truth id"):
+            evaluator.evaluate("query", [{"id": "x"}], ground_truth=[])
+
+    def test_extended_ir_metrics(self) -> None:
+        evaluator = CustomEvaluator(
+            metrics=["precision_at_k", "recall_at_k", "ndcg_at_k"]
+        )
+
+        metrics = evaluator.evaluate(
+            "query",
+            [{"id": "irrelevant"}, {"id": "relevant-1"}, {"id": "relevant-2"}],
+            ground_truth=["relevant-1", "relevant-2"],
+        )
+
+        assert metrics["precision_at_k"] == pytest.approx(2 / 3)
+        assert metrics["recall_at_k"] == 1.0
+        assert metrics["ndcg_at_k"] == pytest.approx(0.6934264036, rel=1e-6)
+
+    def test_duplicate_retrieval_ids_do_not_inflate_metrics(self) -> None:
+        evaluator = CustomEvaluator(metrics=["precision_at_k", "recall_at_k"])
+        metrics = evaluator.evaluate(
+            "query",
+            [{"id": "a"}, {"id": "a"}, {"id": "b"}],
+            ground_truth=["a", "b"],
+        )
+
+        assert metrics["precision_at_k"] == pytest.approx(2 / 3)
+        assert metrics["recall_at_k"] == 1.0
+
+    def test_requested_top_k_is_the_precision_denominator(self) -> None:
+        evaluator = CustomEvaluator(metrics=["precision_at_k", "ndcg_at_k"])
+        metrics = evaluator.evaluate(
+            "query",
+            [{"id": "a"}],
+            ground_truth=["a", "b"],
+            top_k=10,
+        )
+
+        assert metrics["precision_at_k"] == 0.1
+        assert metrics["ndcg_at_k"] < 1.0
 
     def test_unsupported_metric_raises(self) -> None:
         with pytest.raises(ValueError, match="Unsupported custom metrics"):

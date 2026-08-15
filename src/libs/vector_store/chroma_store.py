@@ -379,6 +379,35 @@ class ChromaStore(BaseVectorStore):
             raise RuntimeError(
                 f"Failed to delete by metadata {filter_dict}: {e}"
             ) from e
+
+    def update_metadata(
+        self,
+        filter_dict: Dict[str, Any],
+        metadata_updates: Dict[str, Any],
+    ) -> int:
+        """Merge metadata into matching records without recomputing vectors."""
+        if not filter_dict:
+            raise ValueError("filter_dict cannot be empty")
+        if not metadata_updates:
+            return 0
+        try:
+            where = self._build_where_clause(filter_dict)
+            results = self.collection.get(where=where, include=["metadatas"])
+            matching_ids = results.get("ids") or []
+            metadatas = results.get("metadatas") or [{} for _ in matching_ids]
+            if not matching_ids:
+                return 0
+            updates = self._sanitize_metadata(metadata_updates)
+            merged = [
+                self._sanitize_metadata({**(metadata or {}), **updates})
+                for metadata in metadatas
+            ]
+            self.collection.update(ids=matching_ids, metadatas=merged)
+            return len(matching_ids)
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to update metadata for {filter_dict}: {exc}"
+            ) from exc
     
     def _sanitize_metadata(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
         """Sanitize metadata to ensure ChromaDB compatibility.

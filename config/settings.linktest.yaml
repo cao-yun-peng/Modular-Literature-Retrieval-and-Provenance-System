@@ -5,7 +5,7 @@ llm:
   deployment_name: ""
   azure_endpoint: ""
   api_version: ""
-  api_key: "sk-3c5072c00a5546cb8976aa0a7cbbc320"
+  api_key: ${DEEPSEEK_API_KEY}
   temperature: 0.0
   max_tokens: 4096
 
@@ -23,12 +23,12 @@ vision_llm:
   azure_endpoint: ""
   deployment_name: "gpt-4o"
   api_version: "2024-02-15-preview"
-  api_key: ""
+  api_key: ${AZURE_OPENAI_API_KEY}
   max_image_size: 2048
 
 vector_store:
   provider: "chroma"
-  persist_directory: "C:/Users/86135/AppData/Local/Temp/modular_rag_chroma_linktest"
+  persist_directory: "${MODULAR_RAG_LINKTEST_DATA_DIR:-data/linktest}/chroma"
   collection_name: "knowledge_hub"
 
 retrieval:
@@ -53,7 +53,7 @@ evaluation:
 observability:
   log_level: "INFO"
   trace_enabled: true
-  trace_file: "C:/Users/86135/AppData/Local/Temp/modular_rag_traces_linktest/traces.jsonl"
+  trace_file: "${MODULAR_RAG_LINKTEST_DATA_DIR:-data/linktest}/traces/traces.jsonl"
   structured_logging: true
 
 ingestion:

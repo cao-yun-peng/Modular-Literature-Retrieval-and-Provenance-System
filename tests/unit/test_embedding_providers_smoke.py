@@ -16,7 +16,6 @@ from src.libs.embedding.azure_embedding import AzureEmbedding, AzureEmbeddingErr
 from src.libs.embedding.embedding_factory import EmbeddingFactory
 from src.libs.embedding.openai_embedding import OpenAIEmbedding, OpenAIEmbeddingError
 
-
 # =============================================================================
 # Test Fixtures
 # =============================================================================
@@ -84,8 +83,14 @@ class TestOpenAIEmbedding:
         embedding = OpenAIEmbedding(mock_settings_openai)
         assert embedding.api_key == "env-key"
     
-    def test_initialization_missing_api_key(self, mock_settings_openai: Any) -> None:
+    def test_initialization_missing_api_key(
+        self,
+        mock_settings_openai: Any,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
         """Test that initialization fails when API key is missing."""
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
         with pytest.raises(ValueError, match="OpenAI API key not provided"):
             OpenAIEmbedding(mock_settings_openai)
     
@@ -253,8 +258,15 @@ class TestAzureEmbedding:
         embedding = AzureEmbedding(mock_settings_azure)
         assert embedding.api_key == "openai-key"
     
-    def test_initialization_missing_api_key(self, mock_settings_azure: Any) -> None:
+    def test_initialization_missing_api_key(
+        self,
+        mock_settings_azure: Any,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
         """Test that initialization fails when API key is missing."""
+        monkeypatch.delenv("AZURE_OPENAI_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
         with pytest.raises(ValueError, match="Azure OpenAI API key not provided"):
             AzureEmbedding(mock_settings_azure)
     

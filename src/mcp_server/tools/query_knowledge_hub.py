@@ -44,6 +44,10 @@ Parameters:
 - query: Your search question or keywords
 - top_k: Maximum number of results (default: 5)
 - collection: Limit search to a specific document collection
+- retrieval_mode: hybrid, section, or evidence
+- document_ids / zotero_item_keys: Optional source scope
+- expand_context: none, neighbors, parent, or adaptive
+- allow_fulltext_handoff: Return an Agent-side Zotero fulltext recommendation
 """
 
 TOOL_INPUT_SCHEMA: Dict[str, Any] = {
@@ -63,6 +67,31 @@ TOOL_INPUT_SCHEMA: Dict[str, Any] = {
         "collection": {
             "type": "string",
             "description": "Optional collection name to limit the search scope.",
+        },
+        "retrieval_mode": {
+            "type": "string",
+            "enum": ["hybrid", "section", "evidence"],
+            "default": "hybrid",
+        },
+        "document_ids": {
+            "type": "array",
+            "items": {"type": "string"},
+            "maxItems": 50,
+            "default": [],
+        },
+        "zotero_item_keys": {
+            "type": "array",
+            "items": {"type": "string"},
+            "maxItems": 50,
+            "default": [],
+        },
+        "expand_context": {
+            "type": "string",
+            "enum": ["none", "neighbors", "parent", "adaptive"],
+        },
+        "allow_fulltext_handoff": {
+            "type": "boolean",
+            "default": True,
         },
     },
     "required": ["query"],
@@ -126,6 +155,8 @@ class QueryKnowledgeHubTool:
         self._embedding_client = None
         self._response_builder = response_builder or ResponseBuilder()
         self._vector_store = None  # saved for linked-asset resolution
+        self._section_store = None
+        self._last_rerank_fallback = False
 
         # Track initialization state
         self._initialized = False
@@ -192,6 +223,18 @@ class QueryKnowledgeHubTool:
             collection_name=collection,
         )
         self._vector_store = vector_store  # save for linked-asset resolution
+        hierarchy = (
+            self.settings.ingestion.hierarchical_chunking
+            if self.settings.ingestion
+            else None
+        )
+        if hierarchy and hierarchy.enabled:
+            from src.core.settings import resolve_path
+            from src.ingestion.storage.section_store import SectionStore
+
+            self._section_store = SectionStore(resolve_path(hierarchy.section_store_db))
+        else:
+            self._section_store = None
 
         dense_retriever = create_dense_retriever(
             settings=self.settings,
@@ -229,6 +272,11 @@ class QueryKnowledgeHubTool:
         query: str,
         top_k: Optional[int] = None,
         collection: Optional[str] = None,
+        retrieval_mode: str = "hybrid",
+        document_ids: Optional[List[str]] = None,
+        zotero_item_keys: Optional[List[str]] = None,
+        expand_context: Optional[str] = None,
+        allow_fulltext_handoff: bool = True,
     ) -> MCPToolResponse:
         """Execute the query_knowledge_hub tool.
         
@@ -236,6 +284,11 @@ class QueryKnowledgeHubTool:
             query: Search query string.
             top_k: Maximum results to return.
             collection: Target collection name.
+            retrieval_mode: ``hybrid``, ``section`` or ``evidence``.
+            document_ids: Optional project document scope.
+            zotero_item_keys: Optional Zotero item scope.
+            expand_context: Parent/neighbor expansion policy.
+            allow_fulltext_handoff: Whether an optional Agent action may be returned.
             
         Returns:
             MCPToolResponse with formatted content and citations.
@@ -246,6 +299,14 @@ class QueryKnowledgeHubTool:
         # Validate query
         if not query or not query.strip():
             raise ValueError("Query cannot be empty")
+        if retrieval_mode not in {"hybrid", "section", "evidence"}:
+            raise ValueError("retrieval_mode must be hybrid, section, or evidence")
+        document_ids = self._validate_scope_values("document_ids", document_ids)
+        zotero_item_keys = self._validate_scope_values(
+            "zotero_item_keys", zotero_item_keys
+        )
+        if not isinstance(allow_fulltext_handoff, bool):
+            raise ValueError("allow_fulltext_handoff must be a boolean")
         
         # Apply defaults
         effective_top_k = min(
@@ -253,6 +314,11 @@ class QueryKnowledgeHubTool:
             self.config.max_top_k
         )
         effective_collection = collection or self.config.default_collection
+        effective_expand_context = expand_context or self._default_expansion_mode(
+            retrieval_mode
+        )
+        if effective_expand_context not in {"none", "neighbors", "parent", "adaptive"}:
+            raise ValueError("expand_context is invalid")
         
         logger.info(
             f"Executing query_knowledge_hub: query='{query[:50]}...', "
@@ -264,6 +330,9 @@ class QueryKnowledgeHubTool:
         trace.metadata["top_k"] = effective_top_k
         trace.metadata["collection"] = effective_collection
         trace.metadata["source"] = "mcp"
+        trace.metadata["retrieval_mode"] = retrieval_mode
+        trace.metadata["expand_context"] = effective_expand_context
+        self._last_rerank_fallback = False
 
         try:
             # Initialize components for collection
@@ -277,10 +346,41 @@ class QueryKnowledgeHubTool:
                 "collection": effective_collection,
                 "cold_start": _init_elapsed > 500,  # >500ms ≈ cold
             }, elapsed_ms=_init_elapsed)
+            selected_mode = retrieval_mode
+            mode_fallback = False
+            if retrieval_mode == "section" and self._section_store is None:
+                selected_mode = "hybrid"
+                mode_fallback = True
             
             # Perform hybrid search (blocking: embedding API + DB queries)
+            candidate_k = min(
+                max(
+                    effective_top_k,
+                    effective_top_k * self.settings.retrieval.candidate_multiplier,
+                ),
+                self.settings.retrieval.candidate_max,
+            )
             results = await asyncio.to_thread(
-                self._perform_search, query, effective_top_k, trace,
+                self._perform_search,
+                query,
+                candidate_k,
+                trace,
+                document_ids,
+                zotero_item_keys,
+            )
+            trace.record_stage(
+                "semantic_discovery",
+                {
+                    "requested_mode": retrieval_mode,
+                    "selected_mode": selected_mode,
+                    "candidate_count": len(results),
+                    "fallback": mode_fallback,
+                    "reason": (
+                        "SectionStore is unavailable for this collection"
+                        if mode_fallback
+                        else "requested retrieval mode is available"
+                    ),
+                },
             )
             
             # Apply reranking if enabled (may call LLM API)
@@ -288,6 +388,33 @@ class QueryKnowledgeHubTool:
                 results = await asyncio.to_thread(
                     self._apply_rerank, query, results, effective_top_k, trace,
                 )
+
+            if self.settings.evidence.deduplicate:
+                from src.core.query_engine.evidence_deduplicator import (
+                    EvidenceDeduplicator,
+                )
+
+                results = EvidenceDeduplicator().deduplicate(
+                    results,
+                    top_k=effective_top_k,
+                    trace=trace,
+                )
+            else:
+                results = results[:effective_top_k]
+
+            from src.core.query_engine.context_expander import ContextExpander
+
+            results = await asyncio.to_thread(
+                ContextExpander(
+                    self._section_store,
+                    self._vector_store,
+                    self.settings.evidence.max_context_characters,
+                ).expand,
+                results,
+                mode=effective_expand_context,
+                collection=effective_collection,
+                trace=trace,
+            )
 
             # Resolve linked figures/tables (blocking: ChromaDB query)
             linked_assets = await asyncio.to_thread(
@@ -301,13 +428,85 @@ class QueryKnowledgeHubTool:
                 collection=effective_collection,
                 linked_assets=linked_assets,
             )
+            if not self.settings.evidence.include_zotero_identity:
+                for citation in response.citations:
+                    citation.metadata.pop("zotero_item_key", None)
+                    citation.metadata.pop("zotero_attachment_key", None)
+
+            from src.core.query_engine.fulltext_handoff_policy import (
+                FulltextHandoffPolicy,
+                HandoffDecision,
+            )
+            from src.core.response.evidence_bundle import EvidenceBundleBuilder
+
+            decision = (
+                FulltextHandoffPolicy(self.settings.agent_handoff).decide(query, results)
+                if allow_fulltext_handoff
+                and self.settings.evidence.include_zotero_identity
+                else HandoffDecision(
+                    signal="not_evaluated",
+                    reason="fulltext handoff was disabled for this request",
+                )
+            )
+            trace.record_stage(
+                "fulltext_handoff_decision",
+                {
+                    "retrieval_mode": retrieval_mode,
+                    "evidence_count": len(results),
+                    "coverage_signal": decision.signal,
+                    "reason": decision.reason,
+                    "recommended_zotero_attachment_keys": [
+                        document.get("zotero_attachment_key", "")
+                        for document in decision.recommended_documents
+                    ],
+                    "project_did_not_fetch_fulltext": True,
+                },
+            )
+            bundle = EvidenceBundleBuilder(
+                include_score_breakdown=self.settings.evidence.include_score_breakdown,
+                include_zotero_identity=self.settings.evidence.include_zotero_identity,
+            ).build(
+                query=query,
+                collection=effective_collection,
+                requested_mode=retrieval_mode,
+                selected_mode=selected_mode,
+                results=results,
+                citations=response.citations,
+                decision=decision,
+                fallback=self._last_rerank_fallback or mode_fallback,
+                candidate_count=candidate_k,
+            )
+            response.evidence_bundle = bundle
+            response.metadata.update(
+                {
+                    "evidence_bundle_version": bundle["schema_version"],
+                    "retrieval": bundle["retrieval"],
+                    "coverage": bundle["coverage"],
+                    "recommended_next_action": bundle["recommended_next_action"],
+                }
+            )
+            trace.record_stage(
+                "evidence_bundle_building",
+                {
+                    "schema_version": bundle["schema_version"],
+                    "evidence_count": len(bundle["evidence"]),
+                    "includes_zotero_identity": any(
+                        evidence.get("zotero_attachment_key")
+                        for evidence in bundle["evidence"]
+                    ),
+                },
+            )
             
             # Store final results in trace for dashboard display
             trace.metadata["final_results"] = [
                 {
                     "chunk_id": r.chunk_id,
                     "score": round(r.score, 4),
-                    "text": r.text or "",
+                    "text": (
+                        r.text or ""
+                        if self.settings.observability.include_content
+                        else ""
+                    ),
                     "source": r.metadata.get("source_path", r.metadata.get("source", "")),
                     "title": r.metadata.get("title", ""),
                 }
@@ -333,6 +532,8 @@ class QueryKnowledgeHubTool:
         query: str,
         top_k: int,
         trace: Optional[Any] = None,
+        document_ids: Optional[List[str]] = None,
+        zotero_item_keys: Optional[List[str]] = None,
     ) -> List[RetrievalResult]:
         """Perform hybrid search.
         
@@ -347,18 +548,16 @@ class QueryKnowledgeHubTool:
         if self._hybrid_search is None:
             raise RuntimeError("HybridSearch not initialized")
         
-        # Use a larger initial retrieval for reranking
-        initial_top_k = top_k * 2 if self.config.enable_rerank else top_k
-        
         try:
             results = self._hybrid_search.search(
                 query=query,
-                top_k=initial_top_k,
+                top_k=top_k,
                 filters=None,
                 trace=trace,
                 return_details=False,
             )
-            return results if isinstance(results, list) else results.results
+            values = results if isinstance(results, list) else results.results
+            return self._filter_result_scope(values, document_ids, zotero_item_keys)
         except Exception as e:
             logger.warning(f"Hybrid search failed: {e}")
             return []
@@ -382,25 +581,121 @@ class QueryKnowledgeHubTool:
             Reranked results (or original if reranking fails).
         """
         if self._reranker is None or not self._reranker.is_enabled:
+            self._last_rerank_fallback = False
             return results[:top_k]
         
         try:
+            conservative = self.settings.rerank.strategy == "conservative"
             rerank_result = self._reranker.rerank(
                 query=query,
                 results=results,
-                top_k=top_k,
+                top_k=len(results) if conservative else top_k,
                 trace=trace,
             )
+            self._last_rerank_fallback = rerank_result.used_fallback
             
             if rerank_result.used_fallback:
                 logger.warning(
                     f"Reranker fallback: {rerank_result.fallback_reason}"
                 )
             
+            if conservative and not rerank_result.used_fallback:
+                return self._conservative_fusion(
+                    results,
+                    rerank_result.results,
+                    top_k,
+                    self.settings.rerank.rrf_weight,
+                )
             return rerank_result.results
         except Exception as e:
             logger.warning(f"Reranking failed, using original order: {e}")
+            self._last_rerank_fallback = True
             return results[:top_k]
+
+    @staticmethod
+    def _conservative_fusion(
+        original: List[RetrievalResult],
+        reranked: List[RetrievalResult],
+        top_k: int,
+        rrf_weight: float,
+    ) -> List[RetrievalResult]:
+        def normalize(values: Dict[str, float]) -> Dict[str, float]:
+            if not values:
+                return {}
+            low, high = min(values.values()), max(values.values())
+            if high == low:
+                return {key: 1.0 for key in values}
+            return {key: (value - low) / (high - low) for key, value in values.items()}
+
+        original_by_id = {result.chunk_id: result for result in original}
+        rerank_by_id = {result.chunk_id: result.score for result in reranked}
+        normalized_rrf = normalize(
+            {result.chunk_id: float(result.score) for result in original}
+        )
+        normalized_rerank = normalize(rerank_by_id)
+        fused: List[RetrievalResult] = []
+        for chunk_id, source in original_by_id.items():
+            final_score = (
+                rrf_weight * normalized_rrf[chunk_id]
+                + (1.0 - rrf_weight) * normalized_rerank.get(chunk_id, 0.0)
+            )
+            fused.append(
+                RetrievalResult(
+                    chunk_id=chunk_id,
+                    score=final_score,
+                    text=source.text,
+                    metadata={
+                        **source.metadata,
+                        "original_score": source.score,
+                        "rerank_score": rerank_by_id.get(chunk_id),
+                        "final_score": final_score,
+                        "rerank_strategy": "conservative",
+                    },
+                )
+            )
+        return sorted(fused, key=lambda result: (-result.score, result.chunk_id))[:top_k]
+
+    @staticmethod
+    def _validate_scope_values(
+        name: str, values: Optional[List[str]]
+    ) -> List[str]:
+        if values is None:
+            return []
+        if not isinstance(values, list) or len(values) > 50:
+            raise ValueError(f"{name} must be a list with at most 50 values")
+        cleaned = [str(value).strip() for value in values if str(value).strip()]
+        return list(dict.fromkeys(cleaned))
+
+    def _default_expansion_mode(self, retrieval_mode: str) -> str:
+        if retrieval_mode == "section":
+            return "parent"
+        if retrieval_mode == "evidence":
+            return "none"
+        return self.settings.evidence.expand_context
+
+    @staticmethod
+    def _filter_result_scope(
+        results: List[RetrievalResult],
+        document_ids: Optional[List[str]],
+        zotero_item_keys: Optional[List[str]],
+    ) -> List[RetrievalResult]:
+        document_scope = set(document_ids or [])
+        zotero_scope = set(zotero_item_keys or [])
+        if not document_scope and not zotero_scope:
+            return results
+        filtered = []
+        for result in results:
+            metadata = result.metadata or {}
+            document_id = str(
+                metadata.get("document_id", metadata.get("source_ref", ""))
+            )
+            zotero_item_key = str(metadata.get("zotero_item_key", ""))
+            if document_scope and document_id not in document_scope:
+                continue
+            if zotero_scope and zotero_item_key not in zotero_scope:
+                continue
+            filtered.append(result)
+        return filtered
     
     def _resolve_linked_assets(
         self,
@@ -554,6 +849,11 @@ async def query_knowledge_hub_handler(
     query: str,
     top_k: int = 5,
     collection: Optional[str] = None,
+    retrieval_mode: str = "hybrid",
+    document_ids: Optional[List[str]] = None,
+    zotero_item_keys: Optional[List[str]] = None,
+    expand_context: Optional[str] = None,
+    allow_fulltext_handoff: bool = True,
 ) -> types.CallToolResult:
     """Handler function for MCP tool registration.
     
@@ -567,6 +867,11 @@ async def query_knowledge_hub_handler(
         query: Search query string.
         top_k: Maximum number of results.
         collection: Optional collection name.
+        retrieval_mode: hybrid, section, or evidence.
+        document_ids: Optional project document scope.
+        zotero_item_keys: Optional Zotero item scope.
+        expand_context: Optional hierarchy expansion mode.
+        allow_fulltext_handoff: Return an optional Zotero Agent action.
         
     Returns:
         MCP CallToolResult with content blocks (text and optionally images).
@@ -578,6 +883,11 @@ async def query_knowledge_hub_handler(
             query=query,
             top_k=top_k,
             collection=collection,
+            retrieval_mode=retrieval_mode,
+            document_ids=document_ids,
+            zotero_item_keys=zotero_item_keys,
+            expand_context=expand_context,
+            allow_fulltext_handoff=allow_fulltext_handoff,
         )
         
         # Use to_mcp_content() which handles multimodal (text + images)

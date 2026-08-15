@@ -214,6 +214,14 @@ class ListCollectionsTool:
                             f"Failed to get count for collection '{collection.name}': {e}"
                         )
                         info.count = None
+                    source_stats = self._source_statistics(collection)
+                    sync_stats = self._zotero_sync_statistics(collection.name)
+                    if source_stats or sync_stats:
+                        info.metadata = {
+                            **(info.metadata or {}),
+                            "source_stats": source_stats,
+                            "zotero_sync": sync_stats,
+                        }
                 
                 collections_info.append(info)
                 
@@ -223,6 +231,51 @@ class ListCollectionsTool:
         
         logger.info(f"Found {len(collections_info)} collections")
         return collections_info
+
+    @staticmethod
+    def _source_statistics(collection: Any) -> Dict[str, Any]:
+        """Aggregate source identities without returning private file paths."""
+        try:
+            payload = collection.get(include=["metadatas"])
+        except Exception:
+            return {}
+        if not isinstance(payload, dict) or not payload.get("metadatas"):
+            return {}
+        source_types: Dict[str, int] = {}
+        document_ids: set[str] = set()
+        zotero_collections: set[str] = set()
+        for metadata in payload.get("metadatas") or []:
+            metadata = metadata or {}
+            source_type = str(metadata.get("source_type", "manual"))
+            source_types[source_type] = source_types.get(source_type, 0) + 1
+            document_id = metadata.get("document_id", metadata.get("source_ref"))
+            if document_id:
+                document_ids.add(str(document_id))
+            raw_keys = metadata.get("zotero_collection_keys", "")
+            if isinstance(raw_keys, str):
+                zotero_collections.update(
+                    key.strip() for key in raw_keys.split(",") if key.strip()
+                )
+            elif isinstance(raw_keys, list):
+                zotero_collections.update(str(key) for key in raw_keys if key)
+        return {
+            "chunk_count_by_source_type": source_types,
+            "document_count": len(document_ids),
+            "zotero_collection_keys": sorted(zotero_collections),
+        }
+
+    def _zotero_sync_statistics(self, collection_name: str) -> Dict[str, Any]:
+        try:
+            from src.core.settings import resolve_path
+            from src.integrations.zotero.state import ZoteroSyncStateStore
+
+            state_path = resolve_path(self.settings.sources.zotero.sync_state_db)
+            if not state_path.exists():
+                return {}
+            return ZoteroSyncStateStore(state_path).collection_summary(collection_name)
+        except Exception:
+            logger.debug("Unable to read Zotero sync statistics", exc_info=True)
+            return {}
     
     def format_response(
         self,

@@ -1,5 +1,7 @@
 """Unit tests for HybridSearch reference chunk demotion."""
 
+from unittest.mock import MagicMock
+
 import pytest
 from src.core.query_engine.hybrid_search import HybridSearch, HybridSearchConfig
 from src.core.types import RetrievalResult
@@ -97,3 +99,57 @@ def test_reference_demotion_no_reference_chunks():
     demoted = hybrid._apply_reference_demotion(results)
     assert demoted[0].score == 0.9
     assert demoted[1].score == 0.5
+
+
+def test_collection_is_routing_key_not_chunk_metadata_filter():
+    """Collection selects the sparse index without filtering chunk metadata."""
+    dense = MagicMock()
+    sparse = MagicMock()
+    dense.retrieve.return_value = [
+        RetrievalResult(
+            chunk_id="dense-1",
+            score=0.9,
+            text="dense result",
+            metadata={"doc_type": "paper"},
+        )
+    ]
+    sparse.retrieve.return_value = [
+        RetrievalResult(
+            chunk_id="sparse-1",
+            score=0.8,
+            text="sparse result",
+            metadata={"doc_type": "paper"},
+        )
+    ]
+    config = HybridSearchConfig(
+        enable_dense=True,
+        enable_sparse=True,
+        parallel_retrieval=False,
+        metadata_filter_post=True,
+        reference_weight=1.0,
+    )
+    hybrid = HybridSearch(
+        config=config,
+        dense_retriever=dense,
+        sparse_retriever=sparse,
+    )
+
+    results = hybrid.search(
+        "active matter",
+        top_k=10,
+        filters={"collection": "eval_test", "doc_type": "paper"},
+    )
+
+    assert results
+    dense.retrieve.assert_called_once_with(
+        query="active matter",
+        top_k=config.dense_top_k,
+        filters={"doc_type": "paper"},
+        trace=None,
+    )
+    sparse.retrieve.assert_called_once_with(
+        keywords=["active", "matter"],
+        top_k=config.sparse_top_k,
+        collection="eval_test",
+        trace=None,
+    )

@@ -218,7 +218,7 @@ ollama pull deepseek-r1:1.5b
 llm:
   provider: "deepseek"     # openai / azure / ollama / deepseek
   model: "deepseek-chat"
-  api_key: "your-api-key"
+  api_key: ${DEEPSEEK_API_KEY}
 
 # Embedding —— 用于 Dense Retrieval
 embedding:
@@ -229,7 +229,7 @@ embedding:
 # 向量数据库
 vector_store:
   provider: "chroma"
-  persist_directory: "C:/rag_runtime/modular_rag/chroma"
+  persist_directory: "${MODULAR_RAG_DATA_DIR:-data}/chroma"
 
 # 检索参数
 retrieval:
@@ -252,9 +252,13 @@ ingestion:
   batch_size: 100
 ```
 
-推荐将 `persist_directory`、BM25 索引目录和 trace 文件放在本地可写的 runtime 目录
-（例如 `C:/rag_runtime/modular_rag/` 或系统临时目录），避免将 SQLite/Chroma/BM25
-运行时文件直接放在受同步、扫描或权限策略影响的仓库目录中。
+配置文件支持 `${VAR}` 和 `${VAR:-default}` 环境变量占位符。启动前设置
+`DEEPSEEK_API_KEY`（如启用视觉模型，再设置 `AZURE_OPENAI_API_KEY`），不要把真实密钥写入
+YAML 或提交到版本库。`MODULAR_RAG_DATA_DIR` 控制 Chroma、BM25 和表格资产的运行目录，
+`MODULAR_RAG_TRACE_DIR` 可单独控制 trace 目录；未设置时均使用仓库下的 `data/`。
+
+生产部署时，推荐将上述数据目录指向本地可写的 runtime 目录（例如
+`C:/rag_runtime/modular_rag/`），避免 SQLite/Chroma/BM25 文件受到同步、扫描或仓库权限策略影响。
 
 ---
 
@@ -517,6 +521,8 @@ pytest --cov=src --cov-report=html
 | **Pipeline** | 完整摄入→检索→连带召回→响应全链路 |
 
 > 📊 **评估指南**：详细的评估方法论、Golden Test Set 构建、A/B 对比实验、CI/CD 集成方案，请参阅 [EVALUATION_GUIDE.md](EVALUATION_GUIDE.md)。
+
+> 🧭 **Zotero Agent Evidence**：完整设计见 [技术方案](docs/ZOTERO_AGENT_EVIDENCE_PLATFORM_DESIGN.md)，落地状态见 [实施报告](docs/ZOTERO_AGENT_EVIDENCE_IMPLEMENTATION_REPORT.md)，实际配置与同步命令见 [使用手册](docs/ZOTERO_AGENT_EVIDENCE_USER_MANUAL.md)。
 
 ---
 

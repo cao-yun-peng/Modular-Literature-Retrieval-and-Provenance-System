@@ -16,37 +16,41 @@ Design Principles:
 - Idempotent: SHA256-based skip for unchanged files
 """
 
-from pathlib import Path
-from typing import Callable, List, Optional, Dict, Any
 import time
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Mapping, Optional
 
 from src.core.settings import (
     Settings,
     get_bm25_index_dir,
+    get_table_storage_dir,
     load_settings,
     resolve_path,
 )
-from src.core.types import Document, Chunk
 from src.core.trace.trace_context import TraceContext
-from src.observability.logger import get_logger
-
-# Libs layer imports
-from src.libs.loader.file_integrity import SQLiteIntegrityChecker
-from src.libs.loader.pdf_loader import PdfLoader, PaperPdfLoader
-from src.libs.embedding.embedding_factory import EmbeddingFactory
-from src.libs.vector_store.vector_store_factory import VectorStoreFactory
+from src.core.types import Chunk, Document
 
 # Ingestion layer imports
 from src.ingestion.chunking.document_chunker import DocumentChunker
-from src.ingestion.transform.chunk_refiner import ChunkRefiner
-from src.ingestion.transform.metadata_enricher import MetadataEnricher
-from src.ingestion.transform.image_captioner import ImageCaptioner
+from src.ingestion.chunking.hierarchical_chunker import HierarchicalDocumentChunker
+from src.ingestion.embedding.batch_processor import BatchProcessor
 from src.ingestion.embedding.dense_encoder import DenseEncoder
 from src.ingestion.embedding.sparse_encoder import SparseEncoder
-from src.ingestion.embedding.batch_processor import BatchProcessor
 from src.ingestion.storage.bm25_indexer import BM25Indexer
-from src.ingestion.storage.vector_upserter import VectorUpserter
 from src.ingestion.storage.image_storage import ImageStorage
+from src.ingestion.storage.section_store import SectionStore
+from src.ingestion.storage.vector_upserter import VectorUpserter
+from src.ingestion.source_metadata import attach_source_metadata
+from src.ingestion.transform.chunk_refiner import ChunkRefiner
+from src.ingestion.transform.image_captioner import ImageCaptioner
+from src.ingestion.transform.metadata_enricher import MetadataEnricher
+from src.libs.embedding.embedding_factory import EmbeddingFactory
+
+# Libs layer imports
+from src.libs.loader.file_integrity import SQLiteIntegrityChecker
+from src.libs.loader.pdf_loader import PaperPdfLoader, PdfLoader
+from src.libs.vector_store.vector_store_factory import VectorStoreFactory
+from src.observability.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -152,7 +156,7 @@ class IngestionPipeline:
             self.loader = PaperPdfLoader(
                 extract_images=True,
                 image_storage_dir=str(resolve_path(f"data/images/{collection}")),
-                table_storage_dir="C:/Users/86135/AppData/Local/Temp/modular_rag_tables",
+                table_storage_dir=str(get_table_storage_dir(collection, settings)),
                 collection=collection,
             )
             logger.info("  ✓ PaperPdfLoader initialized")
@@ -164,8 +168,15 @@ class IngestionPipeline:
             logger.info("  ✓ PdfLoader initialized")
         
         # Stage 3: Chunker
-        self.chunker = DocumentChunker(settings)
-        logger.info("  ✓ DocumentChunker initialized")
+        hierarchy = settings.ingestion.hierarchical_chunking if settings.ingestion else None
+        self.section_store: Optional[SectionStore] = None
+        if hierarchy and hierarchy.enabled:
+            self.chunker = HierarchicalDocumentChunker(settings)
+            self.section_store = SectionStore(resolve_path(hierarchy.section_store_db))
+            logger.info("  ✓ HierarchicalDocumentChunker + SectionStore initialized")
+        else:
+            self.chunker = DocumentChunker(settings)
+            logger.info("  ✓ DocumentChunker initialized")
         
         # Stage 4: Transforms
         self.chunk_refiner = ChunkRefiner(settings)
@@ -216,6 +227,7 @@ class IngestionPipeline:
         file_path: str,
         trace: Optional[TraceContext] = None,
         on_progress: Optional[Callable[[str, int, int], None]] = None,
+        source_metadata: Optional[Mapping[str, Any]] = None,
     ) -> PipelineResult:
         """Execute the full ingestion pipeline on a file.
         
@@ -226,6 +238,9 @@ class IngestionPipeline:
                 invoked when each pipeline stage completes.  *current* is
                 the 1-based index of the completed stage; *total* is the
                 number of stages (currently 6).
+            source_metadata: Optional external-source identity metadata to
+                inherit on every generated chunk.  Core loader and chunking
+                fields remain owned by this pipeline and cannot be replaced.
         
         Returns:
             PipelineResult with success status and statistics
@@ -274,6 +289,7 @@ class IngestionPipeline:
             _t0 = time.monotonic()
             document = self.loader.load(str(file_path))
             _elapsed = (time.monotonic() - _t0) * 1000.0
+            attached_metadata = attach_source_metadata(document, source_metadata)
             
             text_preview = document.text[:200].replace('\n', ' ') + "..." if len(document.text) > 200 else document.text
             image_count = len(document.metadata.get("images", []))
@@ -286,7 +302,8 @@ class IngestionPipeline:
             stages["loading"] = {
                 "doc_id": document.id,
                 "text_length": len(document.text),
-                "image_count": image_count
+                "image_count": image_count,
+                "source_metadata_keys": sorted(attached_metadata),
             }
             if trace is not None:
                 trace.record_stage("load", {
@@ -294,7 +311,11 @@ class IngestionPipeline:
                     "doc_id": document.id,
                     "text_length": len(document.text),
                     "image_count": image_count,
-                    "text_preview": document.text,
+                    "text_preview": (
+                        document.text[:500]
+                        if self.settings.observability.include_content
+                        else ""
+                    ),
                 }, elapsed_ms=_elapsed)
             
             # ─────────────────────────────────────────────────────────────
@@ -324,7 +345,11 @@ class IngestionPipeline:
                     "chunks": [
                         {
                             "chunk_id": c.id,
-                            "text": c.text,
+                            "text": (
+                                c.text
+                                if self.settings.observability.include_content
+                                else ""
+                            ),
                             "char_len": len(c.text),
                             "chunk_index": c.metadata.get("chunk_index", i),
                         }
@@ -378,8 +403,16 @@ class IngestionPipeline:
                     "chunks": [
                         {
                             "chunk_id": c.id,
-                            "text_before": _pre_refine_texts.get(c.id, ""),
-                            "text_after": c.text,
+                            "text_before": (
+                                _pre_refine_texts.get(c.id, "")
+                                if self.settings.observability.include_content
+                                else ""
+                            ),
+                            "text_after": (
+                                c.text
+                                if self.settings.observability.include_content
+                                else ""
+                            ),
                             "char_len": len(c.text),
                             "refined_by": c.metadata.get("refined_by", ""),
                             "enriched_by": c.metadata.get("enriched_by", ""),
@@ -459,8 +492,26 @@ class IngestionPipeline:
             logger.info("  6b. BM25 Index...")
             self.bm25_indexer.build(sparse_stats, collection=self.collection, trace=trace)
             logger.info(f"      Index built for {len(sparse_stats)} documents")
+
+            # 6c: Persist derived Parent–Child mappings only after both recall
+            # indexes succeeded, keeping the three stores consistent.
+            if getattr(self, "section_store", None) is not None and isinstance(
+                self.chunker, HierarchicalDocumentChunker
+            ):
+                hierarchy = self.settings.ingestion.hierarchical_chunking
+                self.section_store.upsert(
+                    self.collection,
+                    self.chunker.last_parents,
+                    chunks,
+                    hierarchy.corpus_schema_version,
+                )
+                stages["hierarchy"] = {
+                    "parent_count": len(self.chunker.last_parents),
+                    "child_count": len(chunks),
+                    "schema_version": hierarchy.corpus_schema_version,
+                }
             
-            # 6c: Register images in image storage index
+            # 6d: Register images in image storage index
             # Note: Images are already saved by PdfLoader, we just need to index them
             logger.info("  6c. Image Storage Index...")
             images = document.metadata.get("images", [])
@@ -558,10 +609,55 @@ class IngestionPipeline:
                 error=str(e),
                 stages=stages
             )
-    
+
     def close(self) -> None:
         """Clean up resources."""
         self.image_storage.close()
+
+    def cleanup_replaced_source(
+        self,
+        *,
+        source_filters: Mapping[str, Any],
+        keep_chunk_ids: List[str],
+        previous_document_id: Optional[str],
+    ) -> Dict[str, int]:
+        """Remove stale index records after a replacement was safely upserted.
+
+        Cleanup is intentionally post-upsert.  If new ingestion fails, the
+        previous searchable version remains available.  A cleanup failure is
+        surfaced to the sync state so the next run can retry it.
+        """
+        vector_store = self.vector_upserter.vector_store
+        if not hasattr(vector_store, "get_by_metadata"):
+            raise RuntimeError("Configured vector store cannot clean up by source identity")
+        existing = vector_store.get_by_metadata(dict(source_filters))
+        keep = set(keep_chunk_ids)
+        stale_ids = [
+            str(record.get("id"))
+            for record in existing
+            if record.get("id") and str(record.get("id")) not in keep
+        ]
+        if stale_ids:
+            vector_store.delete(stale_ids)
+
+        bm25_removed = 0
+        hierarchy_removed = 0
+        if previous_document_id:
+            bm25_removed = int(
+                self.bm25_indexer.remove_document(
+                    previous_document_id,
+                    collection=self.collection,
+                )
+            )
+            if self.section_store is not None:
+                hierarchy_removed = self.section_store.delete_document(
+                    self.collection, previous_document_id
+                )
+        return {
+            "vector_chunks": len(stale_ids),
+            "bm25_document": bm25_removed,
+            "hierarchy_children": hierarchy_removed,
+        }
 
 
 def run_pipeline(
@@ -570,6 +666,7 @@ def run_pipeline(
     collection: str = "default",
     force: bool = False,
     use_paper_loader: bool = False,
+    source_metadata: Optional[Mapping[str, Any]] = None,
 ) -> PipelineResult:
     """Convenience function to run the pipeline.
 
@@ -579,6 +676,7 @@ def run_pipeline(
         collection: Collection name
         force: Force reprocessing
         use_paper_loader: Use PaperPdfLoader with GROBID for academic papers
+        source_metadata: External-source identity metadata inherited by chunks
 
     Returns:
         PipelineResult with execution details
@@ -590,6 +688,6 @@ def run_pipeline(
     )
     
     try:
-        return pipeline.run(file_path)
+        return pipeline.run(file_path, source_metadata=source_metadata)
     finally:
         pipeline.close()

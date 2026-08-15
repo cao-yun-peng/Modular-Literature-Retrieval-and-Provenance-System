@@ -50,8 +50,33 @@ class Citation:
                 result["doi"] = self.metadata.get("doi")
             if "title" in self.metadata:
                 result["title"] = self.metadata.get("title")
+            for field_name in (
+                "citation_key",
+                "zotero_item_key",
+                "zotero_attachment_key",
+                "parent_id",
+                "section_path",
+                "page_start",
+                "page_end",
+            ):
+                if field_name in self.metadata:
+                    result[field_name] = self.metadata.get(field_name)
         if self.page is not None:
             result["page"] = self.page
+        citation_key = result.get("citation_key")
+        page_start = result.get("page_start", self.page)
+        page_end = result.get("page_end", page_start)
+        locator = None
+        if page_start is not None:
+            locator = (
+                f"p. {page_start}"
+                if page_end in (None, page_start)
+                else f"pp. {page_start}–{page_end}"
+            )
+            result["locator"] = locator
+        if citation_key:
+            suffix = f", {locator}" if locator else ""
+            result["markdown"] = f"[@{citation_key}{suffix}]"
         if self.metadata:
             result["metadata"] = self.metadata
         return result
@@ -85,7 +110,18 @@ class CitationGenerator:
         """
         self.snippet_max_length = snippet_max_length
         self.include_metadata_fields = include_metadata_fields or [
-            "title", "section", "chunk_index", "doc_type", "doi"
+            "title",
+            "section",
+            "section_path",
+            "chunk_index",
+            "doc_type",
+            "doi",
+            "citation_key",
+            "zotero_item_key",
+            "zotero_attachment_key",
+            "parent_id",
+            "page_start",
+            "page_end",
         ]
     
     def generate(self, results: List[RetrievalResult]) -> List[Citation]:
@@ -121,7 +157,11 @@ class CitationGenerator:
         source = metadata.get("source_path", "unknown")
         
         # Extract page number (may be int or string)
-        page = metadata.get("page") or metadata.get("page_num")
+        page = (
+            metadata.get("page")
+            or metadata.get("page_num")
+            or metadata.get("page_start")
+        )
         if page is not None:
             try:
                 page = int(page)
