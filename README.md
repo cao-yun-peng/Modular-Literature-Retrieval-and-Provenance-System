@@ -652,18 +652,6 @@ GROBID 解析器在 `src/libs/loader/grobid_parser.py`，可扩展：
 
 ---
 
-## 分支说明
-
-本仓库包含三个分支：
-
-| 分支 | 用途 |
-|---|---|
-| **`main`** | 最新完整代码。适合直接查看或使用 |
-| **`dev`** | 完整 commit 历史，展示从零构建全过程 |
-| **`clean-start`** | 工程骨架，任务清零。适合自己动手实现 |
-
----
-
 ## License
 
 MIT License
