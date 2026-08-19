@@ -2,12 +2,12 @@
 
 <div align="center">
 
-**一个模块化、可插拔、面向学术论文的 RAG 知识库 MCP Server**
+**一个模块化、可插拔、面向学术论文证据检索的 RAG MCP Server**
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![MCP](https://img.shields.io/badge/MCP-1.0%2B-green)](https://modelcontextprotocol.io/)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-223%20passed-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-pytest-blue)](tests/)
 
 </div>
 
@@ -23,7 +23,9 @@
 - [配置](#配置)
 - [使用指南](#使用指南)
   - [文档摄入](#文档摄入)
+  - [Zotero 文献同步](#zotero-文献同步)
   - [知识检索](#知识检索)
+  - [检索评测](#检索评测)
   - [MCP Server 模式](#mcp-server-模式)
   - [可视化 Dashboard](#可视化-dashboard)
   - [学术论文模式](#学术论文模式)
@@ -37,7 +39,9 @@
 
 ## 项目概述
 
-**Modular RAG MCP Server** 是一个基于 **检索增强生成（RAG）** 与 **模型上下文协议（MCP）** 的全栈知识管理平台。它既可以独立作为高性能文档检索引擎运行，也能以 MCP Server 的身份无缝接入 GitHub Copilot、Claude Desktop 等 AI 工具，让 AI 助手直接"阅读"你的私有知识库。
+**Modular RAG MCP Server** 是一个基于 **检索增强生成（RAG）** 与 **模型上下文协议（MCP）** 的文献证据检索服务。它可独立运行为文档检索引擎，也能以 MCP Server 的身份接入 GitHub Copilot、Claude Desktop 等 AI 工具，为上层 LLM 返回可回溯的论文证据、章节和引用定位。
+
+对于已知论文的全文阅读，项目可返回 Zotero Item/Attachment Key 与 Handoff 建议；实际全文读取和引用插入仍由上层 Agent 调用 Zotero 工具完成，项目不会将该行为伪装为自身已完成的操作。
 
 > **设计理念**：**教是最好的学（Learning by Teaching）**。本项目既是一份 RAG 技术的实战答案，也是一套配套的教学资源——每个模块的设计都对应着高频 RAG 面试考点。
 
@@ -49,10 +53,10 @@
 
 | 阶段 | 技术 | 说明 |
 |---|---|---|
-| **分块** | 语义感知 + 上下文增强 | 智能切分保留完整语义，注入标题/页码/图片描述 |
+| **分块** | 论文感知 / Parent–Child 分块 | 保留章节、页码、图表和父子块关联；层级模式可按 feature flag 开启 |
 | **粗排召回** | Hybrid Search (BM25 + Dense) + RRF 融合 | 关键词精确匹配 + 语义向量互补，平衡查全与查准 |
 | **精排重排** | Cross-Encoder / LLM Rerank | 对候选集深度语义打分，两段式架构提升 Top-N 精准度 |
-| **响应生成** | 引用标注 + 多模态组装 | 自动生成带来源标注的回答，支持图文混排 |
+| **证据响应** | Evidence Bundle + 引用标注 | 返回可回溯的证据、章节/页码、分数及可选上下文，而非伪造全文答案 |
 
 ### 学术论文深度支持
 
@@ -60,6 +64,14 @@
 - **图表分块与连带召回**：图表独立成块，正文引用自动替换为占位符，检索时连带拉取图表
 - **DOI / arXiv 识别**：自动提取论文标识符
 - **优雅降级**：GROBID 不可用时自动回退到正则启发式提取
+- **层级证据扩展**：命中 Child 后可按需补充 Parent 或相邻块，并在响应中保留原始证据定位
+
+### Zotero 来源与 Agent Handoff
+
+- **只读增量同步**：通过 Zotero Desktop Local API 读取指定收藏夹的 PDF 附件，以 SHA256 和 SQLite 状态表判断新增、更新与跳过
+- **来源可回溯**：在检索结果中保留 Zotero Item Key、Attachment Key 与可用的 Citation Key
+- **全文交接而非代理**：当证据不足或问题要求通读全文时，返回包含原因和附件标识的建议，由上层 Agent 调用 Zotero `fulltext`
+- **安全默认值**：仅接受 loopback Local API；同步不写入 Zotero，历史附件仅标记 inactive，不会被自动物理删除
 
 ### 全链路可插拔架构
 
@@ -71,7 +83,7 @@
 | **Embedding** | OpenAI / Azure / Ollama / 兼容 OpenAI 协议的任何服务 |
 | **向量数据库** | ChromaDB / 可扩展到 Qdrant、Milvus |
 | **重排序** | Cross-Encoder / LLM Rerank / None |
-| **评估体系** | hit@k / MRR / RAGAS / Custom |
+| **评估体系** | Hit@K / Recall@K / MRR / nDCG / RAGAS / Custom |
 
 ### MCP 生态集成
 
@@ -80,7 +92,8 @@
 ### 可观测性
 
 - 结构化日志（JSON Lines）
-- 全链路 Trace（摄入 → 检索 → 响应）
+- 全链路 Trace（摄入 / 查询 / Zotero 同步 → 证据响应）
+- 版本化评测产物（run ID、测试集 SHA256、逐查询结果）与质量门禁
 - Streamlit Dashboard 六页面可视化监控
 
 ---
@@ -102,14 +115,14 @@
 │         │                                                   │
 │  ┌──────▼──────────────────────────────────────────────┐   │
 │  │                 Retrieval Pipeline                   │   │
-│  │  QueryProcessor → HybridSearch → Reranker → Response │   │
-│  │  (BM25 + Dense + RRF Fusion + Cross-Encoder/LLM)     │   │
-│  │  + linked asset resolution (figure/table recall)      │   │
+│  │ QueryProcessor → HybridSearch → Reranker → Evidence  │   │
+│  │ (BM25 + Dense + RRF Fusion + Cross-Encoder/LLM)      │   │
+│  │ + Parent/Neighbor expansion + Handoff decision       │   │
 │  └─────────────────────────────────────────────────────┘   │
 └────────────────────────────────────────────────────────────┘
 
 ┌────────────────────────────────────────────────────────────┐
-│                 Ingestion Pipeline                          │
+│       Manual PDF / Zotero Local API → Ingestion Pipeline    │
 │                                                             │
 │  PDF → Loader → Chunker → Transform → Encode → Store       │
 │         │          │          │          │        │         │
@@ -252,6 +265,28 @@ ingestion:
   batch_size: 100
 ```
 
+Zotero 同步、层级分块与全文 Handoff 默认关闭；建议在新 collection（如 `papers-v2`）完成对照评测后再开启：
+
+```yaml
+sources:
+  zotero:
+    enabled: true
+    base_url: "http://127.0.0.1:23119"
+    read_only: true
+
+ingestion:
+  hierarchical_chunking:
+    enabled: true
+
+agent_handoff:
+  enabled: true
+
+evidence:
+  expand_context: "adaptive" # none / neighbors / parent / adaptive
+```
+
+层级切分当前按字符数计长，`child_size` 与 `parent_size` 不应直接解释为精确 token 数。完整字段和安全配置见 [Zotero Agent Evidence 使用手册](docs/ZOTERO_AGENT_EVIDENCE_USER_MANUAL.md)。
+
 配置文件支持 `${VAR}` 和 `${VAR:-default}` 环境变量占位符。启动前设置
 `DEEPSEEK_API_KEY`（如启用视觉模型，再设置 `AZURE_OPENAI_API_KEY`），不要把真实密钥写入
 YAML 或提交到版本库。`MODULAR_RAG_DATA_DIR` 控制 Chroma、BM25 和表格资产的运行目录，
@@ -283,6 +318,26 @@ python scripts/ingest.py --path documents/report.pdf --collection my_docs --forc
 python scripts/ingest.py --path documents/ --config custom_settings.yaml
 ```
 
+### Zotero 文献同步
+
+Zotero 同步是可选能力：需先启动 Zotero Desktop 并开启 Local API，然后在配置中启用 `sources.zotero.enabled`。同步仅读取指定收藏夹，不写入 Zotero。
+
+```powershell
+# 先预览新增、更新、跳过计划；不写入索引、状态或 Trace
+.\.venv\Scripts\python.exe scripts\sync_zotero.py `
+  --collection-key ABC123 `
+  --target-collection papers-v2 `
+  --dry-run
+
+# 正式同步；--paper-loader 启用 GROBID-aware 论文解析
+.\.venv\Scripts\python.exe scripts\sync_zotero.py `
+  --collection-key ABC123 `
+  --target-collection papers-v2 `
+  --paper-loader
+```
+
+正式同步会生成不可覆盖的 manifest，并以 `sync_run_id` 关联运行级和文档级 Trace。建议连续运行两次：在附件没有变化时，第二次应没有新增或更新。详见 [Zotero Agent Evidence 使用手册](docs/ZOTERO_AGENT_EVIDENCE_USER_MANUAL.md)。
+
 ### 知识检索
 
 ```bash
@@ -298,6 +353,26 @@ python scripts/query.py --query "关键词搜索" --no-rerank
 # 指定返回数量
 python scripts/query.py --query "topological defect" --top-k 10
 ```
+
+### 检索评测
+
+评测 CLI 使用人工标注的 evidence chunk 计算 Hit@K、Recall@K、MRR、nDCG 等检索指标，并将测试集哈希、配置和逐查询结果保存为版本化产物：
+
+```powershell
+# 先校验 Golden Set 格式，不加载索引或模型
+.\.venv\Scripts\python.exe scripts\evaluate.py `
+  --validate-only `
+  --test-set tests\fixtures\golden_test_set.json
+
+# 运行 Top-10 评测并保存产物
+.\.venv\Scripts\python.exe scripts\evaluate.py `
+  --test-set tests\fixtures\golden_test_set.json `
+  --collection papers-v2 `
+  --top-k 10 `
+  --fail-on-errors
+```
+
+只有在相同 collection、语料/索引版本、模型和 Golden Set SHA256 下，指标才可横向比较。更多命令、质量门禁和 RRF/Cross-Encoder 消融步骤见 [评测使用手册](docs/EVALUATION_USER_MANUAL.md)。
 
 ### MCP Server 模式
 
@@ -319,10 +394,12 @@ MCP 工具列表：
 
 | 工具名 | 描述 |
 |---|---|
-| `query_knowledge_hub` | 混合检索知识库，返回带来源引用的结果 |
-| `list_collections` | 列出所有文档集合 |
-| `get_document_summary` | 获取文档摘要（标题、标签、Chunk 统计） |
-| `export_bibtex` | 导出论文的 BibTeX 引用 |
+| `query_knowledge_hub` | Hybrid / Section / Evidence 检索，返回 Evidence Bundle、引用定位及可选 Handoff 建议 |
+| `list_collections` | 列出集合及可选的来源、Zotero 同步状态统计 |
+| `get_document_summary` | 按项目文档 ID、Zotero Item Key 或 Citation Key 获取文档摘要 |
+| `export_bibtex` | 为手工摄入或无 Zotero 插件的部署导出 BibTeX |
+
+`query_knowledge_hub` 兼容原有调用，也支持 `retrieval_mode`（`hybrid` / `section` / `evidence`）、`expand_context` 和 `allow_fulltext_handoff`。Handoff 只返回外部 Agent 的下一步建议及 Attachment Key；项目本身不会读取 Zotero 全文。
 
 ### 可视化 Dashboard
 
@@ -407,6 +484,9 @@ modular-rag-mcp-server/
 ├── scripts/
 │   ├── ingest.py                    # 文档摄入 CLI
 │   ├── query.py                     # 知识检索 CLI
+│   ├── sync_zotero.py                # Zotero 只读增量同步 CLI
+│   ├── evaluate.py                   # Golden Set 检索评测 CLI
+│   ├── evaluate_retrieval_ablation.py # RRF / Cross-Encoder 消融
 │   └── start_dashboard.py           # Dashboard 启动脚本
 ├── src/
 │   ├── core/                        # 核心层
@@ -428,7 +508,8 @@ modular-rag-mcp-server/
 │   ├── ingestion/                   # 摄入层
 │   │   ├── pipeline.py              # 摄入流水线编排器
 │   │   ├── chunking/
-│   │   │   └── document_chunker.py  # 文档分块（含论文感知模式）
+│   │   │   ├── document_chunker.py  # 文档分块（含论文感知模式）
+│   │   │   └── hierarchical_chunker.py # 可选 Parent–Child 分块
 │   │   ├── transform/               # 数据转换
 │   │   │   ├── chunk_refiner.py     # Chunk 精炼
 │   │   │   ├── metadata_enricher.py # 元数据增强
@@ -460,6 +541,7 @@ modular-rag-mcp-server/
 │   │       ├── get_document_summary.py
 │   │       ├── list_collections.py
 │   │       └── export_bibtex.py
+│   ├── integrations/zotero/         # 本机 Zotero API、同步状态与来源映射
 │   └── observability/               # 可观测性
 │       ├── dashboard/               # Streamlit Dashboard
 │       │   ├── app.py
@@ -467,8 +549,8 @@ modular-rag-mcp-server/
 │       ├── evaluation/              # 检索评估
 │       └── logger.py
 ├── tests/
-│   ├── unit/                        # 单元测试 (>48 files, 168+ tests)
-│   ├── integration/                 # 集成测试 (11 files)
+│   ├── unit/                        # 单元测试
+│   ├── integration/                 # 集成测试
 │   ├── e2e/                         # 端到端测试
 │   └── fixtures/                    # 测试数据 & 样本 PDF
 └── papers/                          # 论文 PDF 存放目录
@@ -478,7 +560,7 @@ modular-rag-mcp-server/
 
 ## 测试
 
-项目采用 **测试驱动开发（TDD）**，共 **223 个测试用例**，覆盖从解析到检索的全部链路。
+项目采用分层测试，覆盖解析、摄入、检索、评测、MCP 与来源集成链路。依赖真实 Zotero、GROBID、Ollama 或模型服务的测试与纯单元测试分离。
 
 ### 运行测试
 
@@ -504,11 +586,11 @@ pytest --cov=src --cov-report=html
 
 ### 测试分层
 
-| 层级 | 标记 | 数量 | 说明 |
-|---|---|---|---|
-| **Unit** | `@pytest.mark.unit` | 168+ | 快速，Mock 外部依赖 |
-| **Integration** | `@pytest.mark.integration` | 11 | 需要真实服务 |
-| **E2E** | `@pytest.mark.e2e` | 15 | 完整流水线验证 |
+| 层级 | 标记 | 说明 |
+|---|---|---|
+| **Unit** | `@pytest.mark.unit` | 快速，Mock 外部依赖 |
+| **Integration** | `@pytest.mark.integration` | 需要真实服务 |
+| **E2E** | `@pytest.mark.e2e` | 完整流水线验证 |
 
 ### 覆盖范围
 
@@ -517,6 +599,9 @@ pytest --cov=src --cov-report=html
 | **Loader** | PDF 解析、GROBID TEI 解析、元数据提取、正则回退 |
 | **Chunker** | 论文分块（标题+摘要 / 图表 / 正文引用）、引映射 |
 | **Retrieval** | 混合检索、RRF 融合、重排序、连带资产解析 |
+| **Evidence** | Parent/Neighbor 扩展、证据去重、Evidence Bundle、Handoff 决策 |
+| **Evaluation** | Golden Set 校验、检索错误分离、指标聚合、质量门禁与消融产物 |
+| **Zotero** | 只读 API、幂等同步、来源身份、状态表、manifest 与 Trace 关联 |
 | **Response** | Markdown 渲染、引用生成、关联图表 `<details>` 展示 |
 | **Pipeline** | 完整摄入→检索→连带召回→响应全链路 |
 
