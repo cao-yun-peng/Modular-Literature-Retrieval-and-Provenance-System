@@ -98,3 +98,4 @@ traces.jsonl
 .env.local
 .env.*.local
 secrets.yaml
+DEV_SPEC.md

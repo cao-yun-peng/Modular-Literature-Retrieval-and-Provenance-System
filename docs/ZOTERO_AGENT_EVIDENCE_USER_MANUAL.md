@@ -65,7 +65,7 @@ evidence:
   --dry-run
 ```
 
-预览会输出每个附件的 `add/update/skip`、原因、Item Key 和 Attachment Key，不输出 PDF 全文。
+预览会输出本次 `sync_run_id`，以及每个附件的 `add/update/skip`、原因、Item Key 和 Attachment Key，不输出 PDF 全文，也不写 Trace、同步状态或 manifest。
 
 常用可选项：
 
@@ -90,7 +90,7 @@ evidence:
 - `1`：至少一个条目失败；
 - `2`：配置无效、Zotero 不可用或目标存储无法初始化。
 
-正式运行会在 `data/sync_manifests/zotero/` 写入不可覆盖的 JSON manifest。连续运行两次时，第二次的 `added + updated` 应为 `0`。
+正式运行会在 `data/sync_manifests/zotero/` 写入不可覆盖的 JSON manifest。manifest 顶层包含 `sync_run_id/run_trace_id`，每个附件条目包含自己的 `trace_id`。同一批次的运行 Trace 和每篇文档 Trace 会写入 `observability.trace_file`，并通过 `sync_run_id` 关联；控制台进度日志同时包含这两个 ID。连续运行两次时，第二次的 `added + updated` 应为 `0`，被跳过的附件仍会留下状态为 `skipped` 的文档 Trace。
 
 ## 5. Agent 查询方式
 
