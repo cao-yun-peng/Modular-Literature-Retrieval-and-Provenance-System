@@ -26,9 +26,10 @@ def _register_vision_providers() -> None:
     Vision LLM provider registry. Add new providers here as they
     are implemented.
     """
+    from src.libs.llm.dashscope_vision_llm import DashScopeVisionLLM
+    LLMFactory.register_vision_provider("dashscope", DashScopeVisionLLM)
     try:
         from src.libs.llm.azure_vision_llm import AzureVisionLLM
-        from src.libs.llm.llm_factory import LLMFactory
         LLMFactory.register_vision_provider("azure", AzureVisionLLM)
     except ImportError:
         # Provider not yet implemented, skip registration

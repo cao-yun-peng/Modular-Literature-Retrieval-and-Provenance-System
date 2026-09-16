@@ -113,6 +113,9 @@ class ChunkRefiner(BaseTransform):
             Tuple of (refined_chunk, refined_by, error_message)
         """
         try:
+            if chunk.metadata.get("preserve_source_text"):
+                chunk.metadata["refined_by"] = "source_preserved"
+                return (chunk, "source_preserved", None)
             # Step 1: Rule-based refinement
             rule_refined_text = self._rule_based_refine(chunk.text)
             
@@ -215,6 +218,11 @@ class ChunkRefiner(BaseTransform):
         
         for chunk in chunks:
             try:
+                if chunk.metadata.get("preserve_source_text"):
+                    chunk.metadata["refined_by"] = "source_preserved"
+                    refined_chunks.append(chunk)
+                    success_count += 1
+                    continue
                 # Step 1: Rule-based refinement (always performed)
                 rule_refined_text = self._rule_based_refine(chunk.text)
                 

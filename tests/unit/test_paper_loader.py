@@ -33,7 +33,7 @@ Introduction content here.
         mock_md_class.return_value = mock_md_instance
 
         # Create a mock PDF file path
-        loader = PaperPdfLoader()
+        loader = PaperPdfLoader(use_grobid=False)
         
         # Test that loader can be instantiated and has required methods
         assert hasattr(loader, 'load')

@@ -72,7 +72,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--paper-loader",
         action="store_true",
-        help="Use the existing GROBID-aware PaperPdfLoader during ingestion.",
+        help="Use PaperPdfLoader (uploads PDFs to MinerU Agent cloud API).",
     )
     parser.add_argument(
         "--dry-run",

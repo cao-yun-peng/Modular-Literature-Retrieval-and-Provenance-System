@@ -76,8 +76,8 @@ def parse_args() -> argparse.Namespace:
     
     parser.add_argument(
         "--collection", "-c",
-        default="default",
-        help="Collection name for organizing documents (default: 'default')"
+        default=None,
+        help="Collection name (defaults to vector_store.collection_name in config)"
     )
     
     parser.add_argument(
@@ -107,8 +107,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--paper-loader",
         action="store_true",
-        help="Use PaperPdfLoader for enhanced paper metadata extraction "
-             "(title, authors, DOI, sections, figures, tables, references)"
+        help="Upload PDFs to the token-free MinerU Agent API for paper parsing "
+             "(up to 10 MB / 20 pages; local Markdown cache)"
     )
     
     return parser.parse_args()
@@ -214,6 +214,7 @@ def main() -> int:
             return 2
         
         settings = load_settings(str(config_path))
+        args.collection = args.collection or settings.vector_store.collection_name
         print(f"[OK] Configuration loaded from: {config_path}")
     except Exception as e:
         print(f"[FAIL] Failed to load configuration: {e}")

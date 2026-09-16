@@ -2,7 +2,7 @@
 
 Tests the full paper chunking pipeline when ``grobid_sections`` are present:
 
-1. Title + Abstract → one chunk (split into two if >1000 chars)
+1. Title + Abstract → one chunk (split only above the token limit)
 2. Figures → per-figure chunks with ``chunk_type: "figure"``
 3. Tables → per-table chunks with ``chunk_type: "table"``
 4. Body sections → split by splitter, with ``[FIG_REF: ...]`` / ``[TABLE_REF: ...]``
@@ -15,7 +15,7 @@ import pytest
 from unittest.mock import Mock
 
 from src.core.types import Document, Chunk
-from src.core.settings import Settings
+from src.core.settings import Settings, IngestionSettings
 from src.ingestion.chunking import DocumentChunker
 from src.libs.splitter.base_splitter import BaseSplitter
 
@@ -38,6 +38,7 @@ class FakeSplitter(BaseSplitter):
 @pytest.fixture
 def fake_settings():
     settings = Mock(spec=Settings)
+    settings.ingestion = IngestionSettings(2500, 200, "recursive", 10)
     settings.splitter = Mock()
     settings.splitter.provider = "fake"
     settings.splitter.chunk_size = 100
@@ -96,7 +97,7 @@ def make_paper_document(**overrides) -> Document:
 # =============================================================================
 
 class TestTitleAbstractChunking:
-    """Title + Abstract → one chunk (two if >1000 chars)."""
+    """Title + Abstract → one chunk (split above the token limit)."""
 
     def test_title_and_abstract_combined_as_one_chunk(self, chunker):
         doc = make_paper_document()
@@ -108,15 +109,15 @@ class TestTitleAbstractChunking:
         assert "# Test Paper" in ta_chunks[0].text
         assert "Test abstract" in ta_chunks[0].text
 
-    def test_title_abstract_splits_when_over_1000_chars(self, chunker):
+    def test_title_abstract_kept_together_when_under_token_limit(self, chunker):
         long_abstract = "Long abstract content. " * 100  # ~2500 chars with spaces
         doc = make_paper_document(metadata_extra={"abstract": long_abstract})
         chunks = chunker.split_document(doc)
 
         ta_chunks = [c for c in chunks if c.metadata.get("chunk_type") in ("title_abstract", "title", "abstract")]
-        assert len(ta_chunks) == 2
+        assert len(ta_chunks) == 1
         types = {c.metadata["chunk_type"] for c in ta_chunks}
-        assert types == {"title", "abstract"}
+        assert types == {"title_abstract"}
 
     def test_only_title_no_abstract(self, chunker):
         doc = make_paper_document(metadata_extra={"abstract": ""})
@@ -474,6 +475,7 @@ class TestLegacyPath:
         from src.core.types import Document
 
         settings = Mock()
+        settings.ingestion = IngestionSettings(2500, 200, "recursive", 10)
         settings.splitter = Mock()
         settings.splitter.provider = "fake"
         settings.splitter.chunk_size = 100
@@ -518,6 +520,7 @@ class TestReferenceChunking:
         from src.core.types import Document
 
         settings = Mock()
+        settings.ingestion = IngestionSettings(2500, 200, "recursive", 10)
         settings.splitter = Mock()
         settings.splitter.provider = "fake"
         settings.splitter.chunk_size = 100
@@ -557,6 +560,7 @@ class TestReferenceChunking:
         from src.core.types import Document
 
         settings = Mock()
+        settings.ingestion = IngestionSettings(2500, 200, "recursive", 10)
         settings.splitter = Mock()
         settings.splitter.provider = "fake"
         settings.splitter.chunk_size = 100

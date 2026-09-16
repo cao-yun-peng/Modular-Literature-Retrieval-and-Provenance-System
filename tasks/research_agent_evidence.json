@@ -1,0 +1,28 @@
+{
+  "evidence_ids": [
+    "RA-E01",
+    "RA-E02",
+    "RA-E03"
+  ],
+  "date": "2026-09-06",
+  "base_commit": "658f17ae49e8f3d32c8a9a8606c70afaf290f0fe",
+  "pytest_exit": 0,
+  "tests_passed": 96,
+  "ruff_exit": 0,
+  "live_arxiv_read_only_exit": 0,
+  "sha256": {
+    "src/agents/research.py": "87c826e364b78d768f20015870b9a64bdfb3a132abe750e1aea1310d4e9decc6",
+    "src/agents/runtime.py": "493a2e14ca5609798c645dc6c15f25b677f094eb6250d61977f3f2b8d371affa",
+    "src/agents/__init__.py": "3c4733a578bec7f9b5efa9bcd0e82831d428e98f017b23279338b474b84b95a7",
+    "src/integrations/arxiv.py": "8846d1d12d40ab94bbcdf4d6bf749c1f4e4a0eb287d0082cc112d90b8042aa77",
+    "src/integrations/zotero/connector.py": "49700a9e1f31213ed6350dd72231e18b70e7509ab2a06859b35c880171dd8f13",
+    "src/mcp_server/tools/research_topic.py": "b4378251929860f5dcb1846d96ccb5c62fb33ab80424c48fcb150ec084266b85",
+    "src/mcp_server/protocol_handler.py": "7874b94f983d16a9f84956e67ee6cc6f03718fc8f1520145431b90b63288eeaf",
+    "src/core/response/citation_generator.py": "f87ecc66a4700a312c89b7a9d5594017da25fba16e8211926bf2368b0990227d",
+    "scripts/research.py": "974e1853fab82c5074b1ae69035a69d65b802706b6dae73e4cebb39b4b4e7ab0",
+    "tests/unit/test_research_agent.py": "4a45b15e705caff2f7193db3897ed3df078f15f29ee8fa11e0ac62a9116a906b",
+    "tests/unit/test_research_acquisition.py": "0243621b61ae86f70f70c12ce65966d436567863e4843447f8f88403c9020dd0",
+    "tests/unit/test_research_interfaces.py": "53a4ec8047724436ef39623675d082927db83ebedd1ea7efe8397a1cf7b1e969",
+    "docs/RESEARCH_AGENT.md": "f1df6dcb6e291d664f5c2bde8fca7d2eb7c6e396458d0170a118a393ca6bcb7b"
+  }
+}

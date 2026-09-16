@@ -269,6 +269,12 @@ class HybridSearch:
         )
         
         # Step 3: Handle fallback scenarios
+        if trace is not None:
+            trace.record_stage("hybrid_retrieval_status", {
+                "dense_error": dense_error,
+                "sparse_error": sparse_error,
+                "fallback": bool(dense_error or sparse_error),
+            })
         used_fallback = False
         if dense_error and sparse_error:
             # Both failed - raise error

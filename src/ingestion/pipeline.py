@@ -132,6 +132,7 @@ class IngestionPipeline:
         collection: str = "default",
         force: bool = False,
         use_paper_loader: bool = False,
+        runtime_root: Optional[Path] = None,
     ):
         """Initialize pipeline with all components.
         
@@ -140,30 +141,39 @@ class IngestionPipeline:
             collection: Collection name for organizing documents
             force: If True, re-process even if file was previously processed
         """
+        from src.core.baseline_guard import assert_baseline_writable
+
+        assert_baseline_writable(settings, collection)
         self.settings = settings
         self.collection = collection
         self.force = force
+        # Evaluation runs can isolate caches/assets without touching production data.
+        runtime_root = Path(runtime_root).resolve() if runtime_root else resolve_path("data")
         
         # Initialize all components
         logger.info("Initializing Ingestion Pipeline components...")
         
         # Stage 1: File Integrity
-        self.integrity_checker = SQLiteIntegrityChecker(db_path=str(resolve_path("data/db/ingestion_history.db")))
+        self.integrity_checker = SQLiteIntegrityChecker(db_path=str(runtime_root / "db/ingestion_history.db"))
         logger.info("  ✓ FileIntegrityChecker initialized")
         
         # Stage 2: Loader
-        if use_paper_loader:
+        if use_paper_loader or settings.ingestion.pdf_parser == "mineru_agent":
             self.loader = PaperPdfLoader(
                 extract_images=True,
-                image_storage_dir=str(resolve_path(f"data/images/{collection}")),
+                image_storage_dir=str(runtime_root / "images" / collection),
                 table_storage_dir=str(get_table_storage_dir(collection, settings)),
                 collection=collection,
+                mineru_cache_dir=runtime_root / "mineru-agent",
             )
-            logger.info("  ✓ PaperPdfLoader initialized")
+            logger.info("  ✓ PaperPdfLoader initialized (MinerU Agent cloud API)")
+        elif settings.ingestion.splitter == "token":
+            from src.libs.loader.page_aware_pdf_loader import PageAwarePdfLoader
+            self.loader = PageAwarePdfLoader(image_storage_dir=str(runtime_root / "images" / collection))
         else:
             self.loader = PdfLoader(
                 extract_images=True,
-                image_storage_dir=str(resolve_path(f"data/images/{collection}"))
+                image_storage_dir=str(runtime_root / "images" / collection)
             )
             logger.info("  ✓ PdfLoader initialized")
         
@@ -215,8 +225,8 @@ class IngestionPipeline:
         logger.info("  ✓ BM25Indexer initialized")
         
         self.image_storage = ImageStorage(
-            db_path=str(resolve_path("data/db/image_index.db")),
-            images_root=str(resolve_path("data/images"))
+            db_path=str(runtime_root / "db/image_index.db"),
+            images_root=str(runtime_root / "images")
         )
         logger.info("  ✓ ImageStorage initialized")
         
@@ -300,6 +310,8 @@ class IngestionPipeline:
             logger.info(f"  Preview: {text_preview[:100]}...")
             
             stages["loading"] = {
+                "parser": document.metadata.get("parser", type(self.loader).__name__),
+                "parser_cache_hit": document.metadata.get("parser_cache_hit", False),
                 "doc_id": document.id,
                 "text_length": len(document.text),
                 "image_count": image_count,
@@ -307,7 +319,7 @@ class IngestionPipeline:
             }
             if trace is not None:
                 trace.record_stage("load", {
-                    "method": "markitdown",
+                    "method": document.metadata.get("parser", type(self.loader).__name__),
                     "doc_id": document.id,
                     "text_length": len(document.text),
                     "image_count": image_count,
@@ -335,11 +347,14 @@ class IngestionPipeline:
             
             stages["chunking"] = {
                 "chunk_count": len(chunks),
-                "avg_chunk_size": sum(len(c.text) for c in chunks) // len(chunks) if chunks else 0
+                "avg_chunk_size": sum(len(c.text) for c in chunks) // len(chunks) if chunks else 0,
+                "method": self.settings.ingestion.splitter,
+                "tokenizer": self.settings.ingestion.tokenizer if self.settings.ingestion.splitter == "token" else None,
+                "max_chunk_tokens": max((c.metadata.get("token_count", 0) for c in chunks), default=0),
             }
             if trace is not None:
                 trace.record_stage("split", {
-                    "method": "recursive",
+                    "method": self.settings.ingestion.splitter,
                     "chunk_count": len(chunks),
                     "avg_chunk_size": sum(len(c.text) for c in chunks) // len(chunks) if chunks else 0,
                     "chunks": [
@@ -433,6 +448,11 @@ class IngestionPipeline:
             # Process through BatchProcessor
             _t0 = time.monotonic()
             batch_result = self.batch_processor.process(chunks, trace)
+            if batch_result.failed_chunks:
+                raise RuntimeError(
+                    f"Encoding failed for {batch_result.failed_chunks} chunks; "
+                    "no vectors written. See batch error details in the ingestion trace."
+                )
             _elapsed = (time.monotonic() - _t0) * 1000.0
             
             dense_vectors = batch_result.dense_vectors

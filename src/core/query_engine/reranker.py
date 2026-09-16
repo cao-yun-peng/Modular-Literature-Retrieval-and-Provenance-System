@@ -175,10 +175,11 @@ class CoreReranker:
             List of dicts suitable for reranker input.
         """
         candidates = []
+        from src.core.retrieval_text import retrieval_text
         for result in results:
             candidates.append({
                 "id": result.chunk_id,
-                "text": result.text,
+                "text": retrieval_text(result),
                 "score": result.score,
                 "metadata": result.metadata.copy(),
             })

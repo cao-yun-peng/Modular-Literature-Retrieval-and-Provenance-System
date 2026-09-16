@@ -112,6 +112,8 @@ class EmbeddingFactory:
 # Auto-register providers on module import
 def _register_builtin_providers() -> None:
     """Register built-in Embedding providers with the factory."""
+    from src.libs.embedding.dashscope_embedding import DashScopeEmbedding
+    EmbeddingFactory.register_provider("dashscope", DashScopeEmbedding)
     try:
         from src.libs.embedding.openai_embedding import OpenAIEmbedding
         EmbeddingFactory.register_provider("openai", OpenAIEmbedding)

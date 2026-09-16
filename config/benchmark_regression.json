@@ -1,0 +1,14 @@
+{
+  "schema_version": "paper-benchmark/1.0",
+  "k": 10,
+  "minimum_deltas": {
+    "evidence_recall_at_k": -0.02,
+    "document_hit_at_k": 0.0,
+    "citation_correctness": 0.0
+  },
+  "maximum_p95_ratio": 1.2,
+  "require_complete_runs": true,
+  "bootstrap_samples": 2000,
+  "bootstrap_seed": 42,
+  "note": "Initial engineering defaults; not a claim of statistical significance."
+}

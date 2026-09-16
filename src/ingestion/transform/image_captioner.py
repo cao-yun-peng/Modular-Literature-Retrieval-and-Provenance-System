@@ -52,6 +52,7 @@ class ImageCaptioner(BaseTransform):
         self.llm = None
         # Caption cache: image_id -> caption string (thread-safe with lock)
         self._caption_cache: Dict[str, str] = {}
+        self._caption_records: Dict[str, dict] = {}
         self._cache_lock = threading.Lock()
         
         # Check if vision LLM is enabled in settings
@@ -71,7 +72,8 @@ class ImageCaptioner(BaseTransform):
         """Load the image captioning prompt from configuration."""
         # Assuming standard relative path. In production, logic might be robust.
         from src.core.settings import resolve_path
-        prompt_path = resolve_path("config/prompts/image_captioning.txt")
+        configured = getattr(self.settings.vision_llm, "prompt_path", None)
+        prompt_path = resolve_path(configured if isinstance(configured, str) and configured else "config/prompts/image_captioning.txt")
         if prompt_path.exists():
             return prompt_path.read_text(encoding="utf-8").strip()
         return "Describe this image in detail for indexing purposes."
@@ -116,6 +118,23 @@ class ImageCaptioner(BaseTransform):
             return None
         
         try:
+            config = self.settings.vision_llm
+            minimum_side = getattr(config, "min_image_side", 0)
+            minimum_area = getattr(config, "min_image_area", 0)
+            minimum_side = minimum_side if isinstance(minimum_side, int) else 0
+            minimum_area = minimum_area if isinstance(minimum_area, int) else 0
+            width = height = 0
+            if minimum_side or minimum_area:
+                from PIL import Image
+                with Image.open(img_path) as source_image:
+                    width, height = source_image.size
+            if min(width, height) < minimum_side or width * height < minimum_area:
+                with self._cache_lock:
+                    self._caption_records[img_id] = {
+                        "status": "skipped_small_raster", "width": width, "height": height,
+                        "image_path": str(Path(img_path).resolve()),
+                    }
+                return None
             image_input = ImageInput(path=img_path)
             response = self.llm.chat_with_image(
                 text=self.prompt,
@@ -127,12 +146,21 @@ class ImageCaptioner(BaseTransform):
             # Cache the result (thread-safe write)
             with self._cache_lock:
                 self._caption_cache[img_id] = caption
+                raw = response.raw_response if isinstance(response.raw_response, dict) else {}
+                self._caption_records[img_id] = {
+                    "status": "model_generated_unreviewed", "model": response.model,
+                    "usage": response.usage, "image_path": str(Path(img_path).resolve()),
+                    "cache_id": raw.get("cache_id"), "cache_hit": raw.get("cache_hit", False),
+                    "image_sha256": raw.get("image_sha256"),
+                }
             logger.debug(f"Generated and cached caption for image {img_id}")
             
             return caption
             
         except Exception as e:
             logger.error(f"Failed to caption image {img_path}: {e}")
+            with self._cache_lock:
+                self._caption_records[img_id] = {"status": "failed", "error_type": type(e).__name__}
             return None
 
     def transform(
@@ -163,11 +191,12 @@ class ImageCaptioner(BaseTransform):
         # Clear cache for new document processing
         with self._cache_lock:
             self._caption_cache.clear()
+            self._caption_records.clear()
         
         # First pass: collect all unique image IDs that need captioning
         images_to_caption: Dict[str, str] = {}  # img_id -> img_path
         for chunk in chunks:
-            referenced_ids = self._find_referenced_image_ids(chunk.text)
+            referenced_ids = self._references(chunk)
             for img_id in referenced_ids:
                 if img_id not in images_to_caption:
                     img_meta = image_lookup.get(img_id)
@@ -183,7 +212,7 @@ class ImageCaptioner(BaseTransform):
         total_captions_added = 0
         
         for chunk in chunks:
-            referenced_ids = self._find_referenced_image_ids(chunk.text)
+            referenced_ids = self._references(chunk)
             
             if not referenced_ids:
                 processed_chunks.append(chunk)
@@ -204,10 +233,19 @@ class ImageCaptioner(BaseTransform):
                     
                     placeholder = f"[IMAGE: {img_id}]"
                     replacement = f"[IMAGE: {img_id}]\n(Description: {caption})"
-                    new_text = new_text.replace(placeholder, replacement)
+                    if getattr(self.settings.vision_llm, "caption_in_text", True):
+                        new_text = new_text.replace(placeholder, replacement)
                     total_captions_added += 1
                     
             chunk.text = new_text
+            if not getattr(self.settings.vision_llm, "caption_in_text", True):
+                chunk.metadata["captions_separate"] = True
+            chunk.metadata["image_caption_records"] = {
+                image_id: {**self._caption_records.get(image_id, {"status": "not_generated"}),
+                    "page": image_lookup.get(image_id, {}).get("page"),
+                    "association": "page_overlap" if chunk.metadata.get("preserve_source_text") else "placeholder"}
+                for image_id in referenced_ids
+            }
             
             if captions_to_add:
                 existing = chunk.metadata.get("image_captions")
@@ -223,6 +261,11 @@ class ImageCaptioner(BaseTransform):
         logger.info(f"Added {total_captions_added} captions, API calls: {api_calls}")
             
         return processed_chunks
+
+    def _references(self, chunk):
+        if chunk.metadata.get("preserve_source_text"):
+            return list(dict.fromkeys(chunk.metadata.get("image_refs", [])))
+        return self._find_referenced_image_ids(chunk.text)
 
     @staticmethod
     def _normalize_image_captions(raw: Any) -> Dict[str, str]:
@@ -266,7 +309,10 @@ class ImageCaptioner(BaseTransform):
         if not images_to_caption:
             return
         
-        max_workers = min(DEFAULT_MAX_WORKERS, len(images_to_caption))
+        configured_workers = getattr(self.settings.vision_llm, "caption_workers", DEFAULT_MAX_WORKERS)
+        if not isinstance(configured_workers, int):
+            configured_workers = DEFAULT_MAX_WORKERS
+        max_workers = min(max(1, configured_workers), len(images_to_caption))
         logger.debug(f"Generating captions for {len(images_to_caption)} images (max_workers={max_workers})")
         
         with ThreadPoolExecutor(max_workers=max_workers) as executor:

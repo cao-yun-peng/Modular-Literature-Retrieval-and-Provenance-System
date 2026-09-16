@@ -90,6 +90,10 @@ class EvidenceBundleBuilder:
             )
         if self.include_score_breakdown:
             evidence["scores"] = scores
+        from src.core.retrieval_text import image_annotations
+        annotations = image_annotations(metadata)
+        if annotations:
+            evidence["image_annotations"] = annotations
         return evidence
 
     @staticmethod

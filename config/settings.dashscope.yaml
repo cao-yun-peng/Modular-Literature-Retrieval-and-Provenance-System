@@ -1,0 +1,102 @@
+# DashScope paper profile; token counts use the declared cl100k_base proxy.
+llm:
+  provider: deepseek
+  model: deepseek-chat
+  deployment_name: ''
+  azure_endpoint: ''
+  api_version: ''
+  api_key: ${DEEPSEEK_API_KEY}
+  temperature: 0.0
+  max_tokens: 4096
+embedding:
+  provider: dashscope
+  model: ${QWEN_EMBEDDING_MODEL:-text-embedding-v3}
+  dimensions: 1024
+  api_key: ${DASHSCOPE_API_KEY}
+  base_url: ${DASHSCOPE_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+vision_llm:
+  enabled: true
+  provider: dashscope
+  model: ${QWEN_VL_MODEL:-qwen-vl-plus}
+  api_key: ${DASHSCOPE_API_KEY}
+  base_url: ${DASHSCOPE_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+  max_image_size: 2048
+  caption_in_text: false
+  prompt_path: config/prompts/paper_image_captioning.txt
+  max_output_tokens: 256
+  caption_workers: 6
+  min_image_side: 64
+  min_image_area: 16384
+vector_store:
+  provider: chroma
+  persist_directory: data/paper_benchmark/v2-qwen2500/runtime/chroma
+  collection_name: paper-benchmark-v2-qwen2500
+retrieval:
+  dense_top_k: 20
+  sparse_top_k: 20
+  fusion_top_k: 10
+  rrf_k: 60
+  reference_weight: 0.3
+  candidate_multiplier: 2
+  candidate_max: 100
+rerank:
+  enabled: true
+  provider: llm
+  model: cross-encoder/ms-marco-MiniLM-L-6-v2
+  top_k: 5
+  strategy: replace
+  rrf_weight: 0.5
+evaluation:
+  enabled: true
+  provider: custom
+  metrics:
+  - hit_rate
+  - mrr
+  - precision_at_k
+  - recall_at_k
+  - ndcg_at_k
+observability:
+  log_level: INFO
+  trace_enabled: true
+  trace_file: ${MODULAR_RAG_TRACE_DIR:-data/traces}/traces.jsonl
+  structured_logging: true
+  include_content: false
+ingestion:
+  chunk_size: 2500
+  chunk_overlap: 200
+  splitter: token
+  batch_size: 10
+  chunk_refiner:
+    use_llm: false
+  metadata_enricher:
+    use_llm: false
+  hierarchical_chunking:
+    enabled: false
+    child_size: 350
+    child_overlap: 50
+    parent_size: 1200
+    section_store_db: data/paper_benchmark/v2-qwen2500/runtime/db/section_store.sqlite3
+    corpus_schema_version: '2.0'
+  tokenizer: cl100k_base
+sources:
+  zotero:
+    enabled: true
+    base_url: http://127.0.0.1:23119
+    request_timeout_seconds: 10
+    read_only: true
+    sync_state_db: ${MODULAR_RAG_DATA_DIR:-data}/state/zotero_sync.sqlite3
+    allowed_attachment_roots: []
+agent_handoff:
+  enabled: false
+  fulltext_provider: zotero_plugin
+  global_reading_handoff: true
+  low_coverage_handoff: true
+  low_score_threshold: 0.01
+  max_recommended_documents: 3
+evidence:
+  expand_context: adaptive
+  include_score_breakdown: true
+  include_zotero_identity: true
+  require_source_locator: false
+  max_context_characters: 6000
+  deduplicate: false

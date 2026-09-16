@@ -21,6 +21,8 @@ def _register_builtin_providers() -> None:
     This function is called automatically when the module is imported.
     It registers all available splitter implementations with the factory.
     """
+    from src.libs.splitter.token_splitter import TokenSplitter
+    SplitterFactory.register_provider("token", TokenSplitter)
     # Import here to avoid circular imports and handle missing dependencies gracefully
     try:
         from src.libs.splitter.recursive_splitter import RecursiveSplitter

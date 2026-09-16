@@ -1,5 +1,17 @@
 # Modular RAG MCP Server
 
+## 论文 RAG 工作台（默认入口）
+
+React + Vite 前端与 FastAPI 同源运行。已构建的本地环境只需：
+
+```powershell
+.venv/Scripts/python.exe scripts/start_workbench.py
+```
+
+打开 <http://127.0.0.1:8765/>，可对照原文和分块、查看持久化运行记录、检索并生成带引用的回答。当前默认集合 `papers48_baseline` 已冻结：48 篇论文、993 个分块、1024 维向量；上传和重新处理会被阻止。
+
+首次安装、开发与验证命令见 [工作台运行说明](web/README.md)。当前数据与评测分别见 [48 篇基线说明](docs/PAPERS48_BASELINE.md) 和 [20 题测评说明](docs/PAPERS48_PILOT20.md)。旧测试集合、旧文献测评数据和单篇验证脚本已列入清理清单，物理删除待确认；下文可插拔组件描述的是项目能力，实际启用项以 `config/settings.yaml` 为准。
+
 <div align="center">
 
 **一个模块化、可插拔、面向学术论文证据检索的 RAG MCP Server**
@@ -60,10 +72,10 @@
 
 ### 学术论文深度支持
 
-- **GROBID 集成**：自动提取论文标题、作者、摘要、章节结构、图表标题
+- **MinerU Agent 集成**：保留原始 Markdown，整理标题、摘要、章节与图注
 - **图表分块与连带召回**：图表独立成块，正文引用自动替换为占位符，检索时连带拉取图表
 - **DOI / arXiv 识别**：自动提取论文标识符
-- **优雅降级**：GROBID 不可用时自动回退到正则启发式提取
+- **可追溯解析**：缓存 MinerU 原始结果，失败明确报错，结构后处理标明规则来源
 - **层级证据扩展**：命中 Child 后可按需补充 Parent 或相邻块，并在响应中保留原始证据定位
 
 ### Zotero 来源与 Agent Handoff
@@ -201,14 +213,22 @@ pip install lxml
 pip install streamlit
 ```
 
-### 启动 GROBID（学术论文模式）
+### 当前统一论文方案
+
+默认 `config/settings.yaml`：MinerU Agent 解析 → 结构整理、摘要去重 → 结构感知 token 分块 → 阿里云 DashScope `text-embedding-v3`（1024 维）→ Chroma + BM25。
+
+每块上限 **2500 tokens**，同一章节连续内容目标重叠 **200 tokens**，计数固定使用 `cl100k_base`（工程计数口径，不等于阿里云内部 tokenizer）。标题摘要合并；图注独立；正文和附录按章节；参考文献按完整条目打包、不重叠。短章节不会为了凑重叠而跨章节合并。显示公式和 HTML 表格不在中间切开；单个对象超过上限时明确报错，需先整理对象。结构识别仍使用 MinerU Markdown 后处理规则。
+
+默认关闭 LLM 改写与层级二次切块，向量化前再次检查完整输入的 token 上限，不截断文本。新默认库为 `data/chroma-mineru-qwen2500` / `mineru_qwen2500`，旧库与原始 PDF、MinerU 缓存保留。设置 `DASHSCOPE_API_KEY` 后即可使用默认摄入命令；现有其他配置文件保留为显式选择的实验/兼容方案。
+
+### 论文解析（MinerU Agent 轻量 API）
 
 ```bash
-# 使用 Docker（推荐）
-docker run -d -p 8070:8070 lfoppiano/grobid:latest
-
-# 或从源码运行：https://github.com/kermitt2/grobid
+# 无需 Token 或本地 GROBID 服务；此命令将 PDF 上传至 MinerU 官方服务。
+python scripts/ingest.py --path paper.pdf --collection research_papers --paper-loader
 ```
+
+单篇限制为 10 MB、20 页，按 IP 限频。解析结果缓存于 `data/mineru-agent/<SHA256>/`；失败明确报错，不自动退回 GROBID。缓存保存原始 Markdown 和任务 ID。轻量接口不提供图片文件或页码坐标；后处理补齐可识别的段首小标题和图注，公式仍需核对。已有代码显式传入 `use_grobid=True/False` 时仍可使用旧 GROBID/本地路径。
 
 ### 启动 Ollama（本地 Embedding）
 
@@ -308,7 +328,7 @@ python scripts/ingest.py --path documents/report.pdf --collection my_docs
 # 摄入目录下所有 PDF
 python scripts/ingest.py --path documents/ --collection my_docs
 
-# 学术论文模式（启用 GROBID 深度解析）
+# 学术论文模式（启用 MinerU Agent 云端解析）
 python scripts/ingest.py --path papers/ --collection research --paper-loader
 
 # 强制重新处理（忽略已摄入记录）
@@ -329,7 +349,7 @@ Zotero 同步是可选能力：需先启动 Zotero Desktop 并开启 Local API�
   --target-collection papers-v2 `
   --dry-run
 
-# 正式同步；--paper-loader 启用 GROBID-aware 论文解析
+# 正式同步；--paper-loader 启用 MinerU Agent 论文解析
 .\.venv\Scripts\python.exe scripts\sync_zotero.py `
   --collection-key ABC123 `
   --target-collection papers-v2 `
@@ -423,16 +443,13 @@ streamlit run src/observability/dashboard/app.py
 本项目特别针对学术论文场景做了深度优化：
 
 ```bash
-# 1. 确保 GROBID 运行中（localhost:8070）
-docker run -d -p 8070:8070 lfoppiano/grobid:latest
-
-# 2. 使用 paper-loader 模式摄入
+# 1. 使用 MinerU Agent paper-loader 模式摄入（上传到云端）
 python scripts/ingest.py \
   --path papers/research/ \
   --collection research_papers \
   --paper-loader
 
-# 3. 查询论文内容
+# 2. 查询论文内容
 python scripts/query.py \
   --query "nonreciprocal interaction XY model" \
   --collection research_papers
@@ -440,22 +457,21 @@ python scripts/query.py \
 
 **论文模式自动完成**：
 
-1. **GROBID 解析 PDF** → 提取标题、作者、摘要、章节层次、图表标题和内容
-2. **标题+摘要** → 合并为第一个 Chunk（超过 1000 字符时自动拆分）
-3. **每个图表独立成 Chunk** → 标记 `chunk_type: "figure"` / `chunk_type: "table"`
-4. **正文引用替换** → "Figure 1" → `[FIG_REF: fig_0]`，元数据记录 `linked_figures: ["fig_0"]`
+1. **MinerU Agent 解析 PDF** → 原始 Markdown 缓存，再提取论文元数据；段首小标题通过标明来源的规则补齐
+2. **标题+摘要** → 合并为第一个 Chunk（超过 2500 tokens 时按统一规则拆分）
+3. **每个图注独立成 Chunk** → 标记 `chunk_type: "figure"`；图像本身不可用，表格 Markdown 保留在正文
+4. **正文引用替换** → "Figure 1" → `[FIG_REF: fig_1]`，元数据记录 `linked_figures: ["fig_1"]`
 5. **连带召回** → 检索到正文 Chunk 时，自动查找对应的图表 Chunk 合并返回
 
 **数据流**：
 
 ```
 PDF
- ↓ GROBID
-TEI XML
- ↓ GrobidTEIParser
-Paper(title, authors, abstract, sections, figures, tables)
- ↓ PaperPdfLoader._grobid_to_metadata()
-Document.metadata (grobid_sections, grobid_figures, grobid_tables, ...)
+ ↓ MinerU Agent API（免 Token）
+Markdown（保留原始输出）
+ ↓ markdown_structure + PaperPdfLoader
+Document.text = MinerU Markdown + 明确标注的结构后处理
+Document.metadata (paper_sections, paper_figures, parser, parser_task_id, ...)
  ↓ DocumentChunker (paper-aware)
 ┌──────────────────┬───────────────────┬─────────────────────────┐
 │ Title+Abstract   │ Figure Chunks     │ Body Chunks             │
@@ -607,7 +623,7 @@ pytest --cov=src --cov-report=html
 
 > 📊 **评估指南**：详细的评估方法论、Golden Test Set 构建、A/B 对比实验、CI/CD 集成方案，请参阅 [EVALUATION_GUIDE.md](EVALUATION_GUIDE.md)。
 
-> 🧭 **Zotero Agent Evidence**：完整设计见 [技术方案](docs/ZOTERO_AGENT_EVIDENCE_PLATFORM_DESIGN.md)，落地状态见 [实施报告](docs/ZOTERO_AGENT_EVIDENCE_IMPLEMENTATION_REPORT.md)，实际配置与同步命令见 [使用手册](docs/ZOTERO_AGENT_EVIDENCE_USER_MANUAL.md)。
+> 🧭 **Zotero Agent Evidence**：源码接入链路见 [Zotero 接入与代码导读](docs/ZOTERO_INTEGRATION_CODE_WALKTHROUGH.md)，完整设计见 [技术方案](docs/ZOTERO_AGENT_EVIDENCE_PLATFORM_DESIGN.md)，落地状态见 [实施报告](docs/ZOTERO_AGENT_EVIDENCE_IMPLEMENTATION_REPORT.md)，实际配置与同步命令见 [使用手册](docs/ZOTERO_AGENT_EVIDENCE_USER_MANUAL.md)。
 
 ---
 
@@ -645,10 +661,16 @@ class YourStore(BaseVectorStore):
 
 ### 扩展论文解析
 
-GROBID 解析器在 `src/libs/loader/grobid_parser.py`，可扩展：
-- 公式提取（GROBID 已支持 `processFormula=true`）
-- 参考文献结构化解析
-- 自定义章节分类 / 过滤规则
+默认解析器在 `src/libs/loader/mineru_agent.py`，可扩展章节、图注和表格适配。旧 `grobid_parser.py` 保留用于兼容，不再是论文模式默认依赖。
+
+当前冻结基线与 20 题草稿的本地校验：
+
+```powershell
+.venv/Scripts/python.exe scripts/import_paper_baseline.py verify
+.venv/Scripts/python.exe scripts/pilot_benchmark.py validate --allow-draft
+```
+
+前者校验冻结产物哈希，后者检查问题与来源证据，不调用外部模型。它们不代替人工审核，也不证明检索质量。
 
 ---
 

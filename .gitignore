@@ -14,8 +14,9 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Root-level packaging directories; web/src/lib/ contains application source.
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -53,7 +54,16 @@ tests/.tmp/
 
 # Environments
 .env
+.env.*
+# Keep credential-free configuration examples available to contributors.
+!.env.example
+!.env.sample
+!.env.template
+!.env.*.example
+!.env.*.sample
+!.env.*.template
 .venv
+.venv-*/
 env/
 venv/
 ENV/
@@ -93,9 +103,38 @@ logs/
 *.log
 traces.jsonl
 .understand-anything/
+/output/
+/papers/
+/test_data/
+
+# Frontend dependencies, package caches and generated artifacts
+node_modules/
+.pnpm-store/
+.npm/
+.vite/
+*.tsbuildinfo
+playwright-report/
+test-results/
+coverage/
+# Keep uv.lock and web/pnpm-lock.yaml versioned for reproducible installs.
 
 # Secrets
-.env.local
-.env.*.local
 secrets.yaml
+secrets.yml
+/config/settings.local.yaml
+/config/settings.local.yml
+/config/settings.*.local.yaml
+/config/settings.*.local.yml
+.streamlit/secrets.toml
+
+# Machine-specific assistant permissions and personal generated reports
+/.claude/settings.local.json
+/interview_report_*.md
+
+# Existing local specification exclusion
 DEV_SPEC.md
+
+# Operating system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

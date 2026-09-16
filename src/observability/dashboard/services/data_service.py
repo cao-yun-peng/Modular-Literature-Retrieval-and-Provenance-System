@@ -39,7 +39,10 @@ class DataService:
                         re-created if the requested collection differs from
                         the currently loaded one.
         """
-        target_collection = collection or "default"
+        from src.core.settings import load_settings
+
+        settings = load_settings()
+        target_collection = collection or settings.vector_store.collection_name
 
         # Re-create chroma if collection changed
         if (
@@ -91,7 +94,7 @@ class DataService:
         self._ensure_stores(collection)
         from dataclasses import asdict
 
-        docs = self._manager.list_documents(collection)
+        docs = self._manager.list_documents(self._current_collection)
         return [asdict(d) for d in docs]
 
     def get_document_detail(
@@ -160,7 +163,7 @@ class DataService:
         self._ensure_stores(collection)
         return self._manager.delete_document(
             source_path,
-            collection or "default",
+            self._current_collection,
             source_hash=source_hash,
         )
 
@@ -171,5 +174,5 @@ class DataService:
         self._ensure_stores(collection)
         from dataclasses import asdict
 
-        stats = self._manager.get_collection_stats(collection)
+        stats = self._manager.get_collection_stats(self._current_collection)
         return asdict(stats)

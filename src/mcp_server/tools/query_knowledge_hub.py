@@ -422,6 +422,7 @@ class QueryKnowledgeHubTool:
             )
 
             # Build response
+            _response_t0 = _time.monotonic()
             response = self._response_builder.build(
                 results=results,
                 query=query,
@@ -494,7 +495,7 @@ class QueryKnowledgeHubTool:
                         evidence.get("zotero_attachment_key")
                         for evidence in bundle["evidence"]
                     ),
-                },
+                }, elapsed_ms=(_time.monotonic() - _response_t0) * 1000.0,
             )
             
             # Store final results in trace for dashboard display
@@ -560,6 +561,8 @@ class QueryKnowledgeHubTool:
             return self._filter_result_scope(values, document_ids, zotero_item_keys)
         except Exception as e:
             logger.warning(f"Hybrid search failed: {e}")
+            if trace is not None:
+                trace.record_stage("retrieval_error", {"error": str(e)})
             return []
     
     def _apply_rerank(

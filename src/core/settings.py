@@ -249,6 +249,12 @@ class VisionLLMSettings:
     provider: str
     model: str
     max_image_size: int
+    caption_in_text: bool = True
+    prompt_path: Optional[str] = None
+    max_output_tokens: int = 700
+    caption_workers: int = 3
+    min_image_side: int = 0
+    min_image_area: int = 0
     api_key: Optional[str] = None
     api_version: Optional[str] = None
     azure_endpoint: Optional[str] = None
@@ -274,6 +280,8 @@ class IngestionSettings:
     chunk_overlap: int
     splitter: str
     batch_size: int
+    tokenizer: str = "cl100k_base"
+    pdf_parser: str = "local"
     chunk_refiner: Optional[Dict[str, Any]] = None  # 动态配置
     metadata_enricher: Optional[Dict[str, Any]] = None  # 动态配置
     hierarchical_chunking: HierarchicalChunkingSettings = field(
@@ -393,6 +401,8 @@ class Settings:
                 chunk_overlap=_require_int(ingestion, "chunk_overlap", "ingestion"),
                 splitter=_require_str(ingestion, "splitter", "ingestion"),
                 batch_size=_require_int(ingestion, "batch_size", "ingestion"),
+                pdf_parser=_optional_str(ingestion, "pdf_parser", "local", "ingestion"),
+                tokenizer=_optional_str(ingestion, "tokenizer", "cl100k_base", "ingestion"),
                 chunk_refiner=ingestion.get("chunk_refiner"),  # 可选配置
                 metadata_enricher=ingestion.get("metadata_enricher"),  # 可选配置
                 hierarchical_chunking=hierarchical_settings,
@@ -406,6 +416,12 @@ class Settings:
                 provider=_require_str(vision_llm, "provider", "vision_llm"),
                 model=_require_str(vision_llm, "model", "vision_llm"),
                 max_image_size=_require_int(vision_llm, "max_image_size", "vision_llm"),
+                caption_in_text=_optional_bool(vision_llm, "caption_in_text", True, "vision_llm"),
+                prompt_path=vision_llm.get("prompt_path"),
+                max_output_tokens=_optional_int(vision_llm, "max_output_tokens", 700, "vision_llm"),
+                caption_workers=_optional_int(vision_llm, "caption_workers", 3, "vision_llm"),
+                min_image_side=_optional_int(vision_llm, "min_image_side", 0, "vision_llm"),
+                min_image_area=_optional_int(vision_llm, "min_image_area", 0, "vision_llm"),
                 api_key=vision_llm.get("api_key"),
                 api_version=vision_llm.get("api_version"),
                 azure_endpoint=vision_llm.get("azure_endpoint"),
@@ -604,6 +620,11 @@ def validate_settings(settings: Settings) -> None:
     if not 0.0 <= settings.rerank.rrf_weight <= 1.0:
         raise SettingsError("rerank.rrf_weight must be between 0 and 1")
     hierarchical = settings.ingestion.hierarchical_chunking if settings.ingestion else None
+    if settings.ingestion and settings.ingestion.splitter == "token":
+        if hierarchical and hierarchical.enabled:
+            raise SettingsError("Token document splitting requires hierarchical_chunking.enabled=false")
+        if settings.ingestion.chunk_size <= 0 or not 0 <= settings.ingestion.chunk_overlap < settings.ingestion.chunk_size:
+            raise SettingsError("Token chunk size/overlap are invalid")
     if hierarchical:
         if hierarchical.child_size <= 0 or hierarchical.parent_size <= 0:
             raise SettingsError("hierarchical chunk sizes must be positive")
@@ -626,6 +647,8 @@ def load_settings(path: str | Path | None = None) -> Settings:
         path: Path to settings YAML.  Defaults to
             ``<repo>/config/settings.yaml`` (absolute, CWD-independent).
     """
+    from src.core.model_env import load_model_env
+    load_model_env()
     settings_path = Path(path) if path is not None else DEFAULT_SETTINGS_PATH
     if not settings_path.is_absolute():
         settings_path = resolve_path(settings_path)

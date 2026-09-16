@@ -113,7 +113,8 @@ class SparseEncoder:
                 )
             
             # Tokenize and count terms
-            terms = self._tokenize(chunk.text)
+            from src.core.retrieval_text import retrieval_text
+            terms = self._tokenize(retrieval_text(chunk))
             term_frequencies = Counter(terms)
             
             # Build statistics dict

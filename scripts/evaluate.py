@@ -74,6 +74,14 @@ def parse_args() -> argparse.Namespace:
         default="tests/fixtures/golden_test_set.json",
         help="Path to golden test set JSON file (default: tests/fixtures/golden_test_set.json)",
     )
+    parser.add_argument("--benchmark-root", help="Source-anchored paper benchmark root")
+    parser.add_argument("--level", choices=["retrieval", "service"], default="retrieval")
+    parser.add_argument("--ks", type=int, nargs="+", default=[5, 10])
+    parser.add_argument("--split", choices=["dev", "test"], default="dev")
+    parser.add_argument("--judgments")
+    parser.add_argument("--evidence-map")
+    parser.add_argument("--selection")
+    parser.add_argument("--repeats", type=int, default=1, help="Paper benchmark repetitions")
     parser.add_argument(
         "--collection",
         default=None,
@@ -131,6 +139,23 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     """Main entry point."""
     args = parse_args()
+
+    if getattr(args, "benchmark_root", None):
+        from scripts.benchmark import main as benchmark_main
+        command = ["--root", args.benchmark_root, "validate" if args.validate_only else "run",
+                   "--dataset", args.test_set]
+        if not args.validate_only:
+            command += ["--strategies", "service" if args.level == "service" else "hybrid",
+                        "--ks", *map(str, args.ks), "--split", args.split, "--output", args.output_dir,
+                        "--repeats", str(args.repeats)]
+            for flag in ("judgments", "selection", "evidence_map"):
+                if getattr(args, flag, None):
+                    command += ["--" + flag.replace("_", "-"), getattr(args, flag)]
+        try:
+            return benchmark_main(command)
+        except Exception as exc:
+            print(f"Benchmark failed: {exc}", file=sys.stderr)
+            return 2
 
     if args.validate_only:
         try:

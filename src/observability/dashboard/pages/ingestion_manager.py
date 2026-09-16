@@ -57,11 +57,13 @@ def _run_ingestion(
 
     try:
         pipeline = IngestionPipeline(settings, collection=collection)
-        pipeline.run(
+        result = pipeline.run(
             file_path=tmp_path,
             trace=trace,
             on_progress=on_progress,
         )
+        if not result.success:
+            raise RuntimeError(result.error or "Pipeline did not complete successfully")
         progress_bar.progress(1.0, text="✅ Complete")
         status_text.success(f"Successfully ingested **{uploaded_file.name}** into collection **{collection}**.")
     except Exception as exc:

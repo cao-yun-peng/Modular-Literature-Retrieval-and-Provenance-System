@@ -1,0 +1,154 @@
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
+
+
+class ApiProblem(Exception):  # noqa: N818 - shared HTTP problem contract
+    def __init__(self, code: str, message: str, status: int = 400, retryable: bool = False):
+        self.code, self.message, self.status, self.retryable = code, message, status, retryable
+
+
+class ErrorDetail(BaseModel):
+    code: str
+    message: str
+    retryable: bool = False
+
+
+class ErrorResponse(BaseModel):
+    error: ErrorDetail
+    request_id: str
+
+
+class DocumentOut(BaseModel):
+    id: str
+    content_hash: str
+    title: str
+    filename: str
+    collection: str
+    status: str
+    created_at: str
+    page_count: int
+    chunk_count: int = 0
+    latest_run_id: str | None = None
+    latest_successful_run_id: str | None = None
+    source_available: bool = True
+
+
+class DocumentPage(BaseModel):
+    items: list[DocumentOut]
+    next_cursor: str | None = None
+
+
+class RunOut(BaseModel):
+    id: str
+    document_id: str | None = None
+    title: str
+    collection: str
+    kind: Literal["ingestion", "retrieval"]
+    status: Literal["queued", "running", "succeeded", "failed", "interrupted"]
+    stage: str
+    source: str
+    created_at: str
+    updated_at: str
+    started_at: str | None = None
+    finished_at: str | None = None
+    config: dict[str, Any]
+    result: dict[str, Any] | None = None
+    error: ErrorDetail | None = None
+    retry_of: str | None = None
+
+
+class RunPage(BaseModel):
+    items: list[RunOut]
+    next_cursor: str | None = None
+
+
+class RunEvent(BaseModel):
+    event_id: int
+    run_id: str
+    stage: str
+    status: str
+    timestamp: str
+    message: str = ""
+    completed_units: int | None = None
+    total_units: int | None = None
+    elapsed_ms: float | None = None
+
+
+class ChunkOut(BaseModel):
+    id: str
+    run_id: str
+    document_id: str
+    index: int
+    text: str | None = None
+    preview: str = ""
+    chunk_type: str
+    section: str
+    token_count: int
+    actual_overlap_tokens: int
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ChunkPage(BaseModel):
+    items: list[ChunkOut]
+    next_cursor: str | None = None
+
+
+class IngestionRequest(BaseModel):
+    document_id: str
+    collection: str | None = None
+
+
+class RetrievalRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=4000)
+    collection: str | None = None
+    document_ids: list[str] = Field(default_factory=list, max_length=100)
+    top_k: Literal[3, 5, 10] = 5
+    generate_answer: bool = True
+
+
+class RetryRequest(BaseModel):
+    stage: Literal["auto", "answer"] = "auto"
+
+
+class EvidenceOut(BaseModel):
+    index: int
+    chunk_id: str
+    document_id: str | None = None
+    run_id: str | None = None
+    title: str
+    text: str
+    section: str = ""
+    scores: dict[str, float | None] = Field(default_factory=dict)
+    linked_assets: list[ChunkOut] = Field(default_factory=list)
+
+
+class RetrievalResultOut(BaseModel):
+    query: str
+    evidence: list[EvidenceOut] = Field(default_factory=list)
+    answer: str | None = None
+    answer_model: str | None = None
+    answer_status: str = "not_requested"
+    trace_id: str | None = None
+
+
+class CollectionOut(BaseModel):
+    name: str
+    document_count: int
+    chunk_count: int
+    status: str
+
+
+class PublicConfig(BaseModel):
+    parser: str
+    embedding_model: str
+    embedding_dimensions: int
+    embedding_configured: bool
+    answer_model: str
+    answer_configured: bool
+    chunk_limit: int
+    target_overlap: int
+    tokenizer: str
+    collection: str
+    max_file_bytes: int
+    max_pages: int

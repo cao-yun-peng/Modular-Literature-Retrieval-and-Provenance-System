@@ -6,6 +6,7 @@ a lightweight, open-source embedding database designed for local-first deploymen
 
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
@@ -423,7 +424,10 @@ class ChromaStore(BaseVectorStore):
         """
         sanitized = {}
         for key, value in metadata.items():
-            if isinstance(value, (str, int, float, bool)):
+            if key in {"image_captions", "image_caption_records"} and isinstance(value, dict):
+                # Preserve nested visual provenance through Chroma's scalar-only metadata.
+                sanitized[key] = json.dumps(value, ensure_ascii=False)
+            elif isinstance(value, (str, int, float, bool)):
                 sanitized[key] = value
             elif value is None:
                 # Skip None values

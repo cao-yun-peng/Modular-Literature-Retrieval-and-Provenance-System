@@ -177,11 +177,20 @@ class BM25Indexer:
         total_length = sum(stat["doc_length"] for stat in term_stats)
         avg_doc_length = total_length / num_docs if num_docs > 0 else 0.0
         
-        # Calculate document frequency (DF) for each term
+        # Collect frequencies and postings in one pass. Preserve the original
+        # first-seen term order and input document order (including score ties).
         doc_freq: Dict[str, int] = {}
+        postings_by_term: Dict[str, List[Dict[str, Any]]] = {}
         for stat in term_stats:
-            for term in stat["term_frequencies"].keys():
+            for term, tf in stat["term_frequencies"].items():
                 doc_freq[term] = doc_freq.get(term, 0) + 1
+                postings = postings_by_term.setdefault(term, [])
+                if tf > 0:
+                    postings.append({
+                        "chunk_id": stat["chunk_id"],
+                        "tf": tf,
+                        "doc_length": stat["doc_length"]
+                    })
         
         # Step 2: Build inverted index with IDF
         index: Dict[str, Dict[str, Any]] = {}
@@ -190,21 +199,10 @@ class BM25Indexer:
             # Calculate IDF using BM25 formula
             idf = self._calculate_idf(num_docs, df)
             
-            # Build posting list for this term
-            postings = []
-            for stat in term_stats:
-                tf = stat["term_frequencies"].get(term, 0)
-                if tf > 0:  # Only include docs that contain this term
-                    postings.append({
-                        "chunk_id": stat["chunk_id"],
-                        "tf": tf,
-                        "doc_length": stat["doc_length"]
-                    })
-            
             index[term] = {
                 "idf": idf,
                 "df": df,
-                "postings": postings
+                "postings": postings_by_term[term]
             }
         
         # Step 3: Store metadata

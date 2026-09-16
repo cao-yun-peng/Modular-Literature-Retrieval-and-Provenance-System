@@ -321,9 +321,8 @@ class PdfLoader(BaseLoader):
 class PaperPdfLoader(PdfLoader):
     """Paper-oriented PDF loader with additional academic metadata extraction.
 
-    When GROBID is available, structured TEI XML parsing provides high-quality
-    extraction of title, authors, abstract, sections, figures, and tables.
-    Falls back gracefully to regex-based heuristics when GROBID is unavailable.
+    MinerU Agent is the default cloud parser. Explicit use_grobid=True/False
+    preserves the legacy GROBID/local paths for existing callers.
     """
 
     def __init__(
@@ -333,22 +332,31 @@ class PaperPdfLoader(PdfLoader):
         table_storage_dir: str | Path = "data/tables",
         collection: str = "default",
         extract_tables: bool = True,
-        use_grobid: bool = True,
+        use_grobid: Optional[bool] = None,
         grobid_url: str = "http://localhost:8070",
+        mineru_cache_dir: str | Path = "data/mineru-agent",
     ) -> None:
-        super().__init__(extract_images=extract_images, image_storage_dir=image_storage_dir)
+        self.use_mineru = use_grobid is None
+        if self.use_mineru:
+            self.extract_images = extract_images
+            self.image_storage_dir = Path(image_storage_dir)
+        else:
+            super().__init__(extract_images=extract_images, image_storage_dir=image_storage_dir)
         self.table_storage_dir = Path(table_storage_dir)
         self.collection = collection
         self.extract_tables = extract_tables
-        self.use_grobid = use_grobid
+        self.use_grobid = bool(use_grobid)
         self.grobid_url = grobid_url
+        self.mineru_cache_dir = Path(mineru_cache_dir)
 
     def load(self, file_path: str | Path) -> Document:
         """Load PDF and enrich with paper-specific metadata.
 
-        Uses GROBID for structured metadata extraction when available,
-        falling back to regex heuristics otherwise.
+        Uses MinerU Markdown as the actual document text by default.
+        Cloud parsing failures propagate; no silent parser substitution.
         """
+        if self.use_mineru:
+            return self._load_mineru(file_path)
         base_doc = super().load(file_path)
         text = base_doc.text
         metadata = base_doc.metadata.copy()
@@ -398,6 +406,32 @@ class PaperPdfLoader(PdfLoader):
                 metadata["tables"] = tables
 
         return Document(id=base_doc.id, text=text, metadata=metadata)
+
+    def _load_mineru(self, file_path: str | Path) -> Document:
+        from src.libs.loader.mineru_agent import MinerUAgentClient, markdown_structure
+
+        path = self._validate_file(file_path).resolve()
+        if path.suffix.lower() != ".pdf":
+            raise ValueError(f"File is not a PDF: {path}")
+        markdown, provenance = MinerUAgentClient(self.mineru_cache_dir).parse(path)
+        if callable(getattr(self, "on_structure", None)):
+            self.on_structure()
+        text, structure = markdown_structure(markdown)
+        metadata = self._extract_paper_metadata(text)
+        metadata.update(structure)
+        metadata.update({"doc_type": "paper", "paper_mode": True,
+                         "source_path": str(path), "doc_hash": provenance["sha256"],
+                         "parser": "mineru_agent", "parser_task_id": provenance["task_id"],
+                         "parser_cache_hit": provenance["cache_hit"],
+                         "parser_markdown_path": provenance["markdown_path"],
+                         "page_count": provenance["page_count"]})
+        if provenance.get("parts"):
+            metadata.update(parser_mode=provenance["parse_mode"],
+                            parser_task_ids=provenance["task_ids"],
+                            parser_parts=provenance["parts"])
+        if metadata.get("references_raw"):
+            metadata["bib_entries"] = self._parse_bib_entries(metadata["references_raw"])
+        return Document(id=f"doc_{provenance['sha256'][:16]}", text=text, metadata=metadata)
 
     def _grobid_to_metadata(self, paper: Any) -> Dict[str, Any]:
         """Convert GROBID-parsed Paper to metadata dict compatible with downstream.

@@ -117,6 +117,11 @@ class DocumentChunker:
         """
         if not document.text or not document.text.strip():
             raise ValueError(f"Document {document.id} has no text content to split")
+
+        if self._settings.ingestion.splitter == "token":
+            if document.metadata.get("paper_sections") is not None:
+                return self._split_structured_tokens(document)
+            return self._split_token_document(document)
         
         # Paper-aware mode: section-first chunking
         if self._is_paper_document(document):
@@ -146,14 +151,41 @@ class DocumentChunker:
         
         return chunks
 
+    def _split_token_document(self, document: Document) -> List[Chunk]:
+        chunks = []
+        for index, (start, end) in enumerate(self._splitter.split_spans(document.text)):
+            text = document.text[start:end]
+            metadata = self._inherit_metadata(document, index, text)
+            for key in ("page", "page_num", "page_start", "page_end", "page_ranges"):
+                metadata.pop(key, None)
+            pages = [p for p in document.metadata.get("page_ranges", [])
+                     if start < p["end"] and end > p["start"]]
+            page_numbers = {p["page"] for p in pages}
+            images = [img for img in document.metadata.get("images", [])
+                      if img.get("page") in page_numbers]
+            metadata.update(
+                chunk_type="paper_text", chunking_strategy="token-document-v1",
+                tokenizer=self._splitter.tokenizer_name, token_count=self._splitter.count(text),
+                chunk_size_tokens=self._splitter.chunk_size,
+                overlap_tokens=self._splitter.chunk_overlap,
+                start_offset=start, end_offset=end, preserve_source_text=True,
+                image_refs=[img["id"] for img in images], images=images,
+                retrieval_text_version="token-document-v1", corpus_schema_version="3.0",
+            )
+            if pages:
+                metadata.update(page_start=min(page_numbers), page_end=max(page_numbers))
+            chunks.append(Chunk(id=self._generate_chunk_id(document.id, index, text),
+                text=text, metadata=metadata, start_offset=start, end_offset=end, source_ref=document.id))
+        return chunks
+
     def _is_paper_document(self, document: Document) -> bool:
         metadata = document.metadata or {}
         return bool(metadata.get("paper_mode") or metadata.get("doc_type") == "paper")
 
     def _split_paper_document(self, document: Document) -> List[Chunk]:
-        """Dispatch to GROBID-aware or legacy paper chunking.
+        """Dispatch to structured or legacy paper chunking.
 
-        When GROBID-structured sections are available in metadata we create:
+        When provider-neutral or legacy GROBID sections are available we create:
         1. Title + Abstract chunk(s)
         2. Per-figure chunks (for linked retrieval)
         3. Per-table chunks (for linked retrieval)
@@ -162,124 +194,66 @@ class DocumentChunker:
         Otherwise falls back to heading-based section splitting.
         """
         metadata = document.metadata or {}
-        if metadata.get("grobid_sections"):
-            return self._split_paper_document_grobid(document)
+        if metadata.get("paper_sections") or metadata.get("grobid_sections"):
+            return self._split_structured_tokens(document)
         return self._split_paper_document_legacy(document)
 
-    # ------------------------------------------------------------------
-    # GROBID-aware paper chunking
-    # ------------------------------------------------------------------
+    def _split_structured_tokens(self, document: Document) -> List[Chunk]:
+        from src.libs.splitter.token_splitter import TokenSplitter
+        from src.libs.splitter.structured_token import structured_spans, pack_references
+        splitter = TokenSplitter(self._settings)
+        meta = document.metadata
+        figures = meta.get("paper_figures", meta.get("grobid_figures", []))
+        tables = meta.get("paper_tables", meta.get("grobid_tables", []))
+        sections = meta.get("paper_sections", meta.get("grobid_sections", []))
+        chunks = []
 
-    def _split_paper_document_grobid(self, document: Document) -> List[Chunk]:
-        metadata = document.metadata or {}
-        chunks: List[Chunk] = []
-        index = 0
+        def emit(text, kind, section="", **extra):
+            pieces = ((t, 0) for t in pack_references(splitter, text)) if kind == "reference" else (
+                (text[a:b], overlap) for a, b, overlap in structured_spans(splitter, text))
+            for part, (piece, overlap) in enumerate(pieces):
+                index = len(chunks)
+                metadata = self._inherit_metadata(document, index, piece)
+                for key in ("paper_sections", "grobid_sections", "references_raw", "abstract",
+                            "page", "page_num", "page_start", "page_end", "page_ranges"):
+                    metadata.pop(key, None)
+                metadata.update(chunk_type=kind, section=section, part_index=part,
+                    tokenizer=splitter.tokenizer_name, token_count=splitter.count(piece),
+                    chunk_size_tokens=splitter.chunk_size, overlap_tokens=splitter.chunk_overlap,
+                    actual_overlap_tokens=overlap, preserve_source_text=True,
+                    chunking_strategy="structured-token-v1", retrieval_text_version="structured-token-v1",
+                    corpus_schema_version="4.0", **extra)
+                metadata["linked_figures"] = sorted(set(re.findall(r"\[FIG_REF:\s*([^\]]+)\]", piece)))
+                metadata["linked_tables"] = sorted(set(re.findall(r"\[TABLE_REF:\s*([^\]]+)\]", piece)))
+                for key in ("linked_figures", "linked_tables"):
+                    if not metadata[key]:
+                        metadata.pop(key)
+                self._enrich_paper_chunk_metadata(metadata, piece)
+                chunks.append(Chunk(id=self._generate_chunk_id(document.id, index, piece),
+                    text=piece, metadata=metadata, source_ref=document.id))
 
-        grobid_figures = metadata.get("grobid_figures", [])
-        grobid_tables = metadata.get("grobid_tables", [])
-        grobid_sections = metadata.get("grobid_sections", [])
-
-        # -- 1. Title + Abstract chunk(s) --
-        title = metadata.get("title", "")
-        abstract = metadata.get("abstract", "")
-
-        if title or abstract:
-            parts = []
-            if title:
-                parts.append(f"# {title}")
-            if abstract:
-                parts.append(f"## Abstract\n{abstract}")
-            ta_text = "\n\n".join(parts)
-
-            if len(ta_text) > 1000 and title and abstract:
-                for label, content in (
-                    ("title", f"# {title}"),
-                    ("abstract", f"## Abstract\n{abstract}"),
-                ):
-                    chunk_id = self._generate_chunk_id(document.id, index, content)
-                    chunk_meta = self._inherit_metadata(document, index, content)
-                    chunk_meta["chunk_type"] = label
-                    chunks.append(Chunk(id=chunk_id, text=content, metadata=chunk_meta))
-                    index += 1
-            else:
-                chunk_id = self._generate_chunk_id(document.id, index, ta_text)
-                chunk_meta = self._inherit_metadata(document, index, ta_text)
-                chunk_meta["chunk_type"] = "title_abstract"
-                chunks.append(Chunk(id=chunk_id, text=ta_text, metadata=chunk_meta))
-                index += 1
-
-        # -- 2. Figure chunks (one per figure, for linked retrieval) --
-        for fig in grobid_figures:
-            fig_text = (
-                f"[FIGURE: {fig['id']}]\n"
-                f"Caption: {fig.get('caption', '')}\n"
-                f"Description: {fig.get('description', '')}"
-            )
-            chunk_id = self._generate_chunk_id(document.id, index, fig_text)
-            chunk_meta = self._inherit_metadata(document, index, fig_text)
-            chunk_meta["chunk_type"] = "figure"
-            chunk_meta["figure_id"] = fig["id"]
-            chunk_meta["figure_caption"] = fig.get("caption", "")
-            chunks.append(Chunk(id=chunk_id, text=fig_text, metadata=chunk_meta))
-            index += 1
-
-        # -- 3. Table chunks (one per table, for linked retrieval) --
-        for tab in grobid_tables:
-            tab_text = (
-                f"[TABLE_DATA: {tab['id']}]\n"
-                f"Caption: {tab.get('caption', '')}\n"
-                f"Content:\n{tab.get('description', '')}"
-            )
-            chunk_id = self._generate_chunk_id(document.id, index, tab_text)
-            chunk_meta = self._inherit_metadata(document, index, tab_text)
-            chunk_meta["chunk_type"] = "table"
-            chunk_meta["table_id"] = tab["id"]
-            chunk_meta["table_caption"] = tab.get("caption", "")
-            chunks.append(Chunk(id=chunk_id, text=tab_text, metadata=chunk_meta))
-            index += 1
-
-        # -- 4. Body sections with figure/table reference detection --
-        body_sections = self._build_body_sections_from_grobid(grobid_sections)
-
-        for section_title, section_text in body_sections:
-            section_text, _, _ = self._process_asset_references(
-                section_text, grobid_figures, grobid_tables
-            )
-
-            text_fragments = self._splitter.split_text(section_text)
-            for text in text_fragments:
-                chunk_id = self._generate_chunk_id(document.id, index, text)
-                chunk_meta = self._inherit_metadata(document, index, text)
-                if section_title:
-                    chunk_meta["section"] = section_title
-                # Per-fragment linked asset detection (not per-section)
-                frag_figs = list(set(re.findall(r"\[FIG_REF:\s*([^\]]+)\]", text)))
-                frag_tabs = list(set(re.findall(r"\[TABLE_REF:\s*([^\]]+)\]", text)))
-                if frag_figs:
-                    chunk_meta["linked_figures"] = frag_figs
-                if frag_tabs:
-                    chunk_meta["linked_tables"] = frag_tabs
-
-                self._enrich_paper_chunk_metadata(chunk_meta, text)
-                chunks.append(Chunk(id=chunk_id, text=text, metadata=chunk_meta))
-                index += 1
-
-        # -- 5. References section (from loader-extracted references_raw) --
-        references_raw = metadata.get("references_raw", "")
-        if references_raw:
-            ref_fragments = self._splitter.split_text(references_raw)
-            for text in ref_fragments:
-                chunk_id = self._generate_chunk_id(document.id, index, text)
-                chunk_meta = self._inherit_metadata(document, index, text)
-                chunk_meta["chunk_type"] = "reference"
-                chunk_meta["section"] = "References"
-                chunks.append(Chunk(id=chunk_id, text=text, metadata=chunk_meta))
-                index += 1
-
+        title, abstract = meta.get("title", ""), meta.get("abstract", "")
+        front = "\n\n".join(p for p in (f"# {title}" if title else "",
+                    f"## Abstract\n{abstract}" if abstract else "") if p)
+        if front:
+            emit(front, "title_abstract", "Title / Abstract")
+        for asset in figures:
+            emit(f"[FIGURE: {asset['id']}]\nCaption: {asset.get('caption', '')}\n"
+                 f"Description: {asset.get('description', '')}", "figure", "Figures",
+                 figure_id=asset["id"], figure_caption=asset.get("caption", ""))
+        for asset in tables:
+            emit(f"[TABLE_DATA: {asset['id']}]\nCaption: {asset.get('caption', '')}\n"
+                 f"Content:\n{asset.get('description', '')}", "table", "Tables",
+                 table_id=asset["id"], table_caption=asset.get("caption", ""))
+        for heading, text in self._build_body_sections(sections):
+            text, _, _ = self._process_asset_references(text, figures, tables)
+            emit(text, "body", heading)
+        if meta.get("references_raw"):
+            emit(meta["references_raw"], "reference", "References")
         return chunks
 
     @staticmethod
-    def _build_body_sections_from_grobid(
+    def _build_body_sections(
         grobid_sections: List[dict],
     ) -> List[tuple]:
         """Convert GROBID section dicts to (heading, text) tuples for splitting."""
@@ -354,7 +328,7 @@ class DocumentChunker:
             asset_id = asset.get("id", "")
             # 1‑based sequential — GROBID emits figures/tables in document
             # order, so the first asset corresponds to "Figure 1" / "Table 1".
-            ref_map[idx + 1] = asset_id
+            ref_map[asset.get("number", idx + 1)] = asset_id
         return ref_map
 
     # ------------------------------------------------------------------

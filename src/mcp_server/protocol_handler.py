@@ -211,6 +211,9 @@ def _register_default_tools(protocol_handler: ProtocolHandler) -> None:
     from src.mcp_server.tools.export_bibtex import register_tool as register_bibtex_tool
     register_bibtex_tool(protocol_handler)
 
+    from src.mcp_server.tools.research_topic import register_tool as register_research_tool
+    register_research_tool(protocol_handler)
+
 
 def create_mcp_server(
     server_name: str,

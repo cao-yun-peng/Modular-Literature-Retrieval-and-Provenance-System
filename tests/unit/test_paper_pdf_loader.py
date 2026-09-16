@@ -302,9 +302,10 @@ class TestPaperPdfLoaderRegexFallback:
 class TestPaperPdfLoaderConfig:
     """Tests for PaperPdfLoader initialization and configuration."""
 
-    def test_default_grobid_enabled(self):
+    def test_default_mineru_enabled(self):
         loader = PaperPdfLoader()
-        assert loader.use_grobid is True
+        assert loader.use_mineru is True
+        assert loader.use_grobid is False
         assert loader.grobid_url == "http://localhost:8070"
 
     def test_grobid_disabled(self):

@@ -58,6 +58,7 @@ def _make_fake_pipeline() -> object:
 
     # Stage 5: encoding
     batch_result = MagicMock()
+    batch_result.failed_chunks = 0
     batch_result.dense_vectors = [[0.1, 0.2]] * 3
     batch_result.sparse_stats = [{"doc_id": f"c{i}"} for i in range(3)]
     fp.batch_processor = MagicMock()
@@ -88,6 +89,14 @@ def _collect_progress(fp) -> List[Tuple[str, int, int]]:
 
 class TestPipelineProgressCallback:
     """Verify on_progress is called correctly."""
+
+    def test_encoding_failure_never_writes_partial_vectors(self):
+        fp = _make_fake_pipeline()
+        fp.batch_processor.process.return_value.failed_chunks = 1
+        result = IngestionPipeline.run(fp, "test.pdf")
+        assert not result.success
+        assert "Encoding failed" in result.error
+        fp.vector_upserter.upsert.assert_not_called()
 
     def test_callback_called_for_all_stages(self) -> None:
         fp = _make_fake_pipeline()

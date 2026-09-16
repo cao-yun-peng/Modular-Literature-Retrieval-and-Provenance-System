@@ -4,7 +4,7 @@ Loader Module.
 This package contains document loader components:
 - Base loader class
 - PDF loader (MarkItDown-based)
-- Paper PDF loader (with optional GROBID integration)
+- Paper PDF loader (MinerU Agent default, explicit legacy GROBID supported)
 - GROBID TEI parser for structured academic metadata
 - File integrity checker
 """

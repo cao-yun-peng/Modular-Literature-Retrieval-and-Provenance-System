@@ -8,6 +8,7 @@ config/prompts/rerank.txt and structures LLM outputs for downstream processing.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -242,8 +243,14 @@ class LLMReranker(BaseReranker):
         # Call LLM
         try:
             messages = [Message(role="user", content=prompt)]
+            call_started = time.perf_counter()
             response = self.llm.chat(messages, trace=trace, **kwargs)
             response_text = response.content
+            if trace is not None:
+                trace.record_stage("llm_usage", {
+                    "operation": "rerank", "model": getattr(response, "model", None),
+                    "usage": getattr(response, "usage", None),
+                }, elapsed_ms=(time.perf_counter() - call_started) * 1000)
         except Exception as e:
             # Return fallback signal - let upstream decide how to handle
             raise LLMRerankError(f"LLM call failed during reranking: {e}") from e

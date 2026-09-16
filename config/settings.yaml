@@ -19,17 +19,11 @@ llm:
 # Embedding Configuration
 # =============================================================================
 embedding:
-  provider: "ollama"  # Options: openai, azure, ollama
-  model: "nomic-embed-text"
-  dimensions: 768    # text-embedding-ada-002 固定维度 (不传递给API, 仅用于验证)
-  base_url: "http://localhost:11434"
-  # Azure-specific settings (if provider is azure):
-  #azure_endpoint: ""  # Set your Azure OpenAI endpoint here
-  deployment_name: "nomic-embed-text"
-  #api_version: "2024-02-15-preview"
-  # api_key: ${AZURE_OPENAI_API_KEY}
-  # OpenAI-specific settings (if provider is openai):
-  # api_key: ${OPENAI_API_KEY}
+  provider: dashscope
+  model: ${QWEN_EMBEDDING_MODEL:-text-embedding-v3}
+  dimensions: 1024
+  api_key: ${DASHSCOPE_API_KEY}
+  base_url: ${DASHSCOPE_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
 
 # =============================================================================
 # Vision LLM Configuration (for Image Captioning)
@@ -52,8 +46,8 @@ vision_llm:
 # =============================================================================
 vector_store:
   provider: "chroma"  # Options: chroma, qdrant, pinecone
-  persist_directory: "${MODULAR_RAG_DATA_DIR:-data}/chroma"
-  collection_name: "knowledge_hub"
+  persist_directory: "${MODULAR_RAG_DATA_DIR:-data}/chroma-papers48-baseline"
+  collection_name: "papers48_baseline"
 
 # =============================================================================
 # Retrieval Configuration
@@ -106,19 +100,21 @@ observability:
 # Ingestion Configuration
 # =============================================================================
 ingestion:
-  chunk_size: 1000
+  chunk_size: 2500
   chunk_overlap: 200
-  splitter: "recursive"  # Options: recursive, semantic, fixed_length
-  batch_size: 100
+  splitter: token
+  tokenizer: cl100k_base
+  pdf_parser: mineru_agent
+  batch_size: 10
   
   # Chunk Refiner Configuration (C5)
   chunk_refiner:
-    use_llm: true  # Set to true to enable LLM-based refinement (requires LLM config)
+    use_llm: false  # Set to true to enable LLM-based refinement (requires LLM config)
     # When use_llm is false or LLM call fails, falls back to rule-based refinement
   
   # Metadata Enricher Configuration (C6)
   metadata_enricher:
-    use_llm: true   # Set to true to enable LLM-based enrichment (requires LLM config)
+    use_llm: false   # Set to true to enable LLM-based enrichment (requires LLM config)
     # When use_llm is false or LLM call fails, falls back to rule-based enrichment
 
   hierarchical_chunking:

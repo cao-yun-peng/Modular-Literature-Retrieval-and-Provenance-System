@@ -100,7 +100,16 @@ class DenseEncoder:
             raise ValueError("Cannot encode empty chunks list")
         
         # Extract text from chunks
-        texts = [chunk.text for chunk in chunks]
+        from src.core.retrieval_text import retrieval_text
+        texts = [retrieval_text(chunk) for chunk in chunks]
+        # Recheck the exact API input after transforms; never silently truncate.
+        from src.libs.splitter.token_splitter import get_tokenizer
+        for chunk, text in zip(chunks, texts):
+            if chunk.metadata.get("chunking_strategy") == "structured-token-v1":
+                encoding = get_tokenizer(chunk.metadata["tokenizer"])
+                count = len(encoding.encode(text, disallowed_special=()))
+                if count > chunk.metadata["chunk_size_tokens"]:
+                    raise ValueError(f"Embedding input exceeds chunk token limit: {chunk.id}")
         
         # Validate that all texts are non-empty
         for i, text in enumerate(texts):

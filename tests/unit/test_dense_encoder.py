@@ -51,6 +51,17 @@ class FakeEmbedding(BaseEmbedding):
 # Constructor Tests
 # ============================================================================
 
+def test_structured_input_guard_checks_final_text_before_api():
+    embedding = FakeEmbedding()
+    encoder = DenseEncoder(embedding)
+    chunk = Chunk(id="over-limit", text="word " * 3000, metadata={
+        "source_path": "paper.pdf", "chunking_strategy": "structured-token-v1",
+        "tokenizer": "cl100k_base", "chunk_size_tokens": 2500,
+    })
+    with pytest.raises(ValueError, match="exceeds chunk token limit"):
+        encoder.encode([chunk])
+    assert embedding.call_count == 0
+
 def test_constructor_valid():
     """Test DenseEncoder initialization with valid parameters."""
     embedding = FakeEmbedding()
