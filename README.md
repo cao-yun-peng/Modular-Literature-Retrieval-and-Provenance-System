@@ -20,8 +20,8 @@
 以下命令从仓库根目录执行。需要 Python 3.10+、[uv](https://docs.astral.sh/uv/)、Node.js 24 和 pnpm 11。当前默认论文解析使用 MinerU 在线服务，向量化使用 DashScope；摄入和研究生成会调用外部服务，可能产生费用。
 
 ```powershell
-git clone https://github.com/cao-yun-peng/MODULAR-RAG-MCP-SERVER-main.git
-cd MODULAR-RAG-MCP-SERVER-main
+git clone https://github.com/cao-yun-peng/Modular-Literature-Retrieval-and-Provenance-System.git
+cd Modular-Literature-Retrieval-and-Provenance-System
 uv sync --frozen --extra web --extra dev
 pnpm --dir web install --frozen-lockfile
 pnpm --dir web build
@@ -59,9 +59,9 @@ MCP 客户端可使用以下 stdio 配置，将路径替换为本机仓库的绝
 {
   "mcpServers": {
     "modular-rag": {
-      "command": "C:/path/to/MODULAR-RAG-MCP-SERVER-main/.venv/Scripts/python.exe",
+      "command": "C:/path/to/Modular-Literature-Retrieval-and-Provenance-System/.venv/Scripts/python.exe",
       "args": ["-m", "src.mcp_server.server"],
-      "cwd": "C:/path/to/MODULAR-RAG-MCP-SERVER-main"
+      "cwd": "C:/path/to/Modular-Literature-Retrieval-and-Provenance-System"
     }
   }
 }
