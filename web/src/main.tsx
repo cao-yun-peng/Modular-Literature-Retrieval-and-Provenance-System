@@ -17,6 +17,7 @@ import {
   Library,
   Activity,
   MessageSquare,
+  FlaskConical,
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
@@ -73,6 +74,16 @@ function SettingsPage() {
     </React.Suspense>
   );
 }
+const ResearchLazy = React.lazy(() =>
+  import("./features/research").then((m) => ({ default: m.ResearchPage })),
+);
+function ResearchPage() {
+  return (
+    <React.Suspense fallback={<div className="empty">正在读取研究任务…</div>}>
+      <ResearchLazy />
+    </React.Suspense>
+  );
+}
 function Shell() {
   const go = useNav(),
     path = useRouterState({ select: (s) => s.location.pathname }),
@@ -92,6 +103,7 @@ function Shell() {
     { path: "/", label: "文献库", icon: Library },
     { path: "/runs", label: "运行记录", icon: Activity },
     { path: "/retrieval", label: "检索实验室", icon: MessageSquare },
+    { path: "/research", label: "研究 Agent", icon: FlaskConical },
     { path: "/settings", label: "系统状态", icon: Settings },
   ];
   const current = links.find((l) =>
@@ -215,6 +227,14 @@ const root = createRootRoute({
   ),
 });
 const routes = [
+  createRoute({
+    getParentRoute: () => root,
+    path: "/research",
+    component: ResearchPage,
+    validateSearch: (s: Record<string, unknown>) => ({
+      run: typeof s.run === "string" ? s.run : undefined,
+    }),
+  }),
   createRoute({
     getParentRoute: () => root,
     path: "/",

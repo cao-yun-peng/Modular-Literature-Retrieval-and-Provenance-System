@@ -4,7 +4,7 @@ export default defineConfig({
   timeout: 30000,
   workers: 1,
   use: {
-    baseURL: "http://127.0.0.1:8765",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:8765",
     viewport: { width: 1440, height: 1000 },
     headless: true,
     screenshot: "only-on-failure",

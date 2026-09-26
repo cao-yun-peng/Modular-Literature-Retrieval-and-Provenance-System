@@ -3,6 +3,21 @@ import { describe, it, expect, vi } from "vitest";
 import { Markdown } from "./markdown";
 import { Status } from "./ui";
 describe("Evidence reading", () => {
+  it("selects research citations without changing ordinary citation handling", () => {
+    const research = vi.fn(),
+      ordinary = vi.fn();
+    render(
+      <Markdown
+        text="研究结论 [E2]，检索结果 [3]。"
+        onResearchCitation={research}
+        onCitation={ordinary}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "E2" }));
+    expect(research).toHaveBeenCalledWith("E2");
+    fireEvent.click(screen.getByRole("button", { name: "3" }));
+    expect(ordinary).toHaveBeenCalledWith(3);
+  });
   it("does not interpret figure panel labels as website links", () => {
     render(<Markdown text="See [FIG_REF: fig_2](a)." />);
     expect(screen.queryByRole("link")).toBeNull();

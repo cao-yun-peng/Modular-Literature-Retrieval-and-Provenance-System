@@ -6,6 +6,7 @@ export type Evidence = components["schemas"]["EvidenceOut"];
 export type Event = components["schemas"]["RunEvent"];
 export type Config = components["schemas"]["PublicConfig"];
 export type Result = components["schemas"]["RetrievalResultOut"];
+export type ResearchResult = components["schemas"]["ResearchResultOut"];
 export type Page<T> = { items: T[]; next_cursor: string | null };
 export class ApiError extends Error {
   constructor(
@@ -34,7 +35,7 @@ export async function api<T>(
 export function post<T>(
   path: string,
   body: unknown,
-  key = crypto.randomUUID(),
+  key: string = crypto.randomUUID(),
 ) {
   return api<T>(path, {
     method: "POST",

@@ -64,7 +64,31 @@ flowchart TD
 
 退出码：`0` 已生成达到最低覆盖判断的草稿；`2` 部分结果或证据不足；`1` 初始化/配置/运行错误。输出是草稿，即使退出码为 0 也需要核读原文。超时、检索失败或被过滤的论断会保留在 `warnings` 中，不能据此声称任务完全成功。
 
-## MCP
+## 网页研究工作台
+
+启动 `scripts/start_workbench.py`，打开 `/research`，或从侧栏选择“研究 Agent”。网页支持综述、发展时间线和问答；默认 3 轮、每轮至多 2 个查询、每次 5 条证据。可以设置 1–5 轮与每次 3/5/10 条证据。
+
+- 页面实时展示检索、证据汇总、覆盖判断、查询改写、草稿生成和引用检查。每轮保留实际查询、缺口、相关证据 ID 与建议补充查询；建议不代表一定执行，实际调用以事件为准。
+- `[E1]` 等引用可选择对应片段；能关联到工作台文献时，可打开原文和完整分块。未关联的证据仍保留片段，不构造无效跳转。
+- 执行状态与研究结果分开：`succeeded` 表示流程结束；研究结果可为 `draft`、`partial` 或 `insufficient`。模型判断/生成失败标为 `failed`，保留过程与证据。报告始终是需核读原文的研究草稿。
+- 本版本网页只查询当前配置的知识库，不开放 `allow_web`、下载入库或 Zotero 参数。冻结基线可读，不修改论文与索引。
+- 创建入口为 `POST /api/v1/research-runs`，需要 `Idempotency-Key`；参数为 `topic`、`mode`、`collection`（可省略）、`max_rounds`、`queries_per_round`、`top_k`。额外参数会被拒绝。
+- `GET /api/v1/research-runs/{id}/result` 返回阶段快照与最终结果；任务状态、历史、SSE 和重试复用 `/api/v1/runs`。SSE 使用 `Last-Event-ID` 续接，历史事件带 `phase`、`round`、`query` 和结构化 `data`；步骤异常不会提前终止事件流。
+- 网页产物统一保存在当前工作台 `runs/<id>/research.json` 和 `report.md`，事件保存在工作台 SQLite；CLI 仍使用 `data/research/`。下载接口为 `/api/v1/runs/{id}/artifacts/research_data` 与 `research_report`。
+- 研究任务并发为 1，检索遵守集合健康检查和读写锁。关闭网页不取消任务；服务重启后未完成任务标记中断，需显式从头重试，并创建关联旧任务的新记录。首版不支持强制取消或断点续跑。
+
+修改接口后重新导出 OpenAPI、生成前端类型并构建前端。验证命令：
+
+```powershell
+.venv/Scripts/python.exe -m pytest tests/unit/test_web_research.py tests/unit/test_research_agent.py tests/unit/test_research_interfaces.py tests/unit/test_research_acquisition.py tests/unit/test_web_api.py -q -o cache_dir=output/pytest-cache
+pnpm --dir web build
+pnpm --dir web test
+node web/node_modules/@playwright/test/cli.js test -c web/playwright.config.ts research.spec.ts
+```
+
+浏览器测试使用受控 API 响应，不发起收费模型请求。真实模型验收与离线测试证据分别记录在 `tasks/research_agent.md`。
+
+## MCP 接口
 
 服务启动时自动注册 `research_topic`，无需改动原来的 `query_knowledge_hub` 调用。示例参数：
 

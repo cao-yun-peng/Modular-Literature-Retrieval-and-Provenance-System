@@ -46,7 +46,13 @@ export function RunsPage() {
               >
                 <div className="inline between">
                   <span className="tag">
-                    {r.kind === "ingestion" ? "论文处理" : "检索问答"}
+                    {
+                      {
+                        ingestion: "论文处理",
+                        retrieval: "检索问答",
+                        research: "研究 Agent",
+                      }[r.kind]
+                    }
                   </span>
                   <Status value={r.status} />
                 </div>
@@ -102,7 +108,9 @@ export function RunsPage() {
                   onClick={() => retry.mutate()}
                 >
                   <RefreshCw size={15} />
-                  重试失败阶段
+                  {current.data.kind === "research"
+                    ? "重新运行研究"
+                    : "重试失败阶段"}
                 </Button>
               )}
               <div className="timeline">
@@ -110,7 +118,7 @@ export function RunsPage() {
                   events.data.map((e) => (
                     <div key={e.event_id} className="timeline-event">
                       <span
-                        className={`timeline-dot ${e.status === "failed" ? "bad" : ""}`}
+                        className={`timeline-dot ${e.status === "failed" || e.phase === "failed" ? "bad" : ""}`}
                       />
                       <div>
                         <strong>{e.message || e.stage}</strong>
@@ -154,13 +162,21 @@ export function RunsPage() {
                   go(
                     current.data!.kind === "ingestion"
                       ? `/documents/${current.data!.document_id}`
-                      : "/retrieval",
+                      : current.data!.kind === "research"
+                        ? "/research"
+                        : "/retrieval",
                     { run: rid },
                   )
                 }
               >
                 打开
-                {current.data.kind === "ingestion" ? "论文工作台" : "检索结果"}
+                {
+                  {
+                    ingestion: "论文工作台",
+                    retrieval: "检索结果",
+                    research: "研究过程与报告",
+                  }[current.data.kind]
+                }
                 <ArrowRight size={16} />
               </Button>
             </>

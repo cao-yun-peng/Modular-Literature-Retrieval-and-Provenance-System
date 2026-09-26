@@ -22,6 +22,8 @@ from .schemas import (
     ErrorResponse,
     IngestionRequest,
     PublicConfig,
+    ResearchRequest,
+    ResearchResultOut,
     RetrievalRequest,
     RetrievalResultOut,
     RetryRequest,
@@ -205,6 +207,27 @@ def create_app(settings=None, root=None, *, start_worker=True):
     ):
         return svc(request).create_retrieval(body.model_dump(), idempotency_key)
 
+    @app.post(
+        "/api/v1/research-runs",
+        response_model=RunOut,
+        status_code=202,
+        operation_id="create_research",
+    )
+    def research(
+        body: ResearchRequest,
+        request: Request,
+        idempotency_key: str = Header(..., min_length=1, max_length=200),
+    ):
+        return svc(request).create_research(body.model_dump(), idempotency_key)
+
+    @app.get(
+        "/api/v1/research-runs/{run_id}/result",
+        response_model=ResearchResultOut,
+        operation_id="research_result",
+    )
+    def research_result(run_id: str, request: Request):
+        return svc(request).research_result(run_id)
+
     @app.get("/api/v1/runs", response_model=RunPage, operation_id="runs")
     def runs(
         request: Request,
@@ -293,6 +316,8 @@ def create_app(settings=None, root=None, *, start_worker=True):
             "raw_markdown": "raw.md",
             "normalized_markdown": "normalized.md",
             "structure": "structure.json",
+            "research_report": "report.md",
+            "research_data": "research.json",
         }
         if kind not in allowed:
             raise ApiProblem("unknown_artifact", "不支持的资源类型", 404)
@@ -301,7 +326,10 @@ def create_app(settings=None, root=None, *, start_worker=True):
             raise ApiProblem("artifact_pending", "此阶段尚未生成结果", 404)
         return FileResponse(
             path,
-            media_type="application/json" if kind == "structure" else "text/plain; charset=utf-8",
+            media_type="application/json"
+            if kind in {"structure", "research_data"}
+            else "text/plain; charset=utf-8",
+            filename=allowed[kind] if kind.startswith("research_") else None,
         )
 
     @app.get("/api/v1/runs/{run_id}/chunks", response_model=ChunkPage, operation_id="chunks")

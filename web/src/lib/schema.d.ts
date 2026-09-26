@@ -157,6 +157,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/research-runs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Research */
+    post: operations["create_research"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/research-runs/{run_id}/result": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Research Result */
+    get: operations["research_result"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/runs": {
     parameters: {
       query?: never;
@@ -502,6 +536,133 @@ export interface components {
       /** Max Pages */
       max_pages: number;
     };
+    /** ResearchEvidenceOut */
+    ResearchEvidenceOut: {
+      /** Id */
+      id: string;
+      /** Chunk Id */
+      chunk_id: string;
+      /** Document Id */
+      document_id?: string | null;
+      /** Run Id */
+      run_id?: string | null;
+      /** Title */
+      title: string;
+      /** Text */
+      text: string;
+      /** Year */
+      year?: string | null;
+      /** Page */
+      page?: number | null;
+      /**
+       * Section
+       * @default
+       */
+      section: string;
+      /**
+       * Excerpt Truncated
+       * @default false
+       */
+      excerpt_truncated: boolean;
+    };
+    /** ResearchIterationOut */
+    ResearchIterationOut: {
+      /** Round */
+      round: number;
+      /** Queries */
+      queries: string[];
+      /**
+       * New Evidence
+       * @default 0
+       */
+      new_evidence: number;
+      /** Sufficient */
+      sufficient: boolean | null;
+      /** Relevant Ids */
+      relevant_ids: string[];
+      /** Gaps */
+      gaps: string[];
+      /** Next Queries */
+      next_queries: string[];
+    };
+    /** ResearchRequest */
+    ResearchRequest: {
+      /** Topic */
+      topic: string;
+      /**
+       * Mode
+       * @default review
+       * @enum {string}
+       */
+      mode: "review" | "timeline" | "answer";
+      /** Collection */
+      collection?: string | null;
+      /**
+       * Max Rounds
+       * @default 3
+       */
+      max_rounds: number;
+      /**
+       * Queries Per Round
+       * @default 2
+       */
+      queries_per_round: number;
+      /**
+       * Top K
+       * @default 5
+       * @enum {integer}
+       */
+      top_k: 3 | 5 | 10;
+    };
+    /** ResearchResultOut */
+    ResearchResultOut: {
+      /** Topic */
+      topic: string;
+      /** Mode */
+      mode: string;
+      /** Collection */
+      collection: string;
+      /**
+       * Status
+       * @default in_progress
+       * @enum {string}
+       */
+      status: "in_progress" | "draft" | "partial" | "insufficient" | "failed";
+      /** Stop Reason */
+      stop_reason: string | null;
+      /**
+       * Markdown
+       * @default
+       */
+      markdown: string;
+      /** Evidence */
+      evidence: components["schemas"]["ResearchEvidenceOut"][];
+      /** Iterations */
+      iterations: components["schemas"]["ResearchIterationOut"][];
+      /** Gaps */
+      gaps: string[];
+      /** Warnings */
+      warnings: string[];
+      /**
+       * Model Calls
+       * @default 0
+       */
+      model_calls: number;
+      /**
+       * Source Count
+       * @default 0
+       */
+      source_count: number;
+      /** Run Options */
+      run_options: {
+        [key: string]: unknown;
+      };
+      /**
+       * Model
+       * @default unknown
+       */
+      model: string;
+    };
     /** RetrievalRequest */
     RetrievalRequest: {
       /** Query */
@@ -572,6 +733,16 @@ export interface components {
       total_units?: number | null;
       /** Elapsed Ms */
       elapsed_ms?: number | null;
+      /** Phase */
+      phase?: ("started" | "completed" | "failed") | null;
+      /** Round */
+      round?: number | null;
+      /** Query */
+      query?: string | null;
+      /** Data */
+      data?: {
+        [key: string]: unknown;
+      };
     };
     /** RunOut */
     RunOut: {
@@ -587,7 +758,7 @@ export interface components {
        * Kind
        * @enum {string}
        */
-      kind: "ingestion" | "retrieval";
+      kind: "ingestion" | "retrieval" | "research";
       /**
        * Status
        * @enum {string}
@@ -1123,6 +1294,126 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["RunOut"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Unprocessable Content */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  create_research: {
+    parameters: {
+      query?: never;
+      header: {
+        "idempotency-key": string;
+      };
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ResearchRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RunOut"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+      /** @description Unprocessable Content */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"];
+        };
+      };
+    };
+  };
+  research_result: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        run_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ResearchResultOut"];
         };
       };
       /** @description Bad Request */

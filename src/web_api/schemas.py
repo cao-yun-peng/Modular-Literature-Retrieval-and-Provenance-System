@@ -1,6 +1,6 @@
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ApiProblem(Exception):  # noqa: N818 - shared HTTP problem contract
@@ -44,7 +44,7 @@ class RunOut(BaseModel):
     document_id: str | None = None
     title: str
     collection: str
-    kind: Literal["ingestion", "retrieval"]
+    kind: Literal["ingestion", "retrieval", "research"]
     status: Literal["queued", "running", "succeeded", "failed", "interrupted"]
     stage: str
     source: str
@@ -73,6 +73,69 @@ class RunEvent(BaseModel):
     completed_units: int | None = None
     total_units: int | None = None
     elapsed_ms: float | None = None
+    phase: Literal["started", "completed", "failed"] | None = None
+    round: int | None = None
+    query: str | None = None
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
+class ResearchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    topic: str = Field(min_length=1, max_length=2000)
+    mode: Literal["review", "timeline", "answer"] = "review"
+    collection: str | None = None
+    max_rounds: int = Field(default=3, ge=1, le=5, strict=True)
+    queries_per_round: int = Field(default=2, ge=1, le=3, strict=True)
+    top_k: Literal[3, 5, 10] = 5
+
+    @field_validator("topic")
+    @classmethod
+    def trim_topic(cls, value):
+        if not value.strip():
+            raise ValueError("topic must not be blank")
+        return value.strip()
+
+
+class ResearchEvidenceOut(BaseModel):
+    id: str
+    chunk_id: str
+    document_id: str | None = None
+    run_id: str | None = None
+    title: str
+    text: str
+    year: str | None = None
+    page: int | None = None
+    section: str = ""
+    excerpt_truncated: bool = False
+
+
+class ResearchIterationOut(BaseModel):
+    model_config = ConfigDict(json_schema_serialization_defaults_required=True)
+    round: int
+    queries: list[str] = Field(default_factory=list)
+    new_evidence: int = 0
+    sufficient: bool | None = None
+    relevant_ids: list[str] = Field(default_factory=list)
+    gaps: list[str] = Field(default_factory=list)
+    next_queries: list[str] = Field(default_factory=list)
+
+
+class ResearchResultOut(BaseModel):
+    model_config = ConfigDict(json_schema_serialization_defaults_required=True)
+    topic: str
+    mode: str
+    collection: str
+    status: Literal["in_progress", "draft", "partial", "insufficient", "failed"] = "in_progress"
+    stop_reason: str | None = None
+    markdown: str = ""
+    evidence: list[ResearchEvidenceOut] = Field(default_factory=list)
+    iterations: list[ResearchIterationOut] = Field(default_factory=list)
+    gaps: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    model_calls: int = 0
+    source_count: int = 0
+    run_options: dict[str, Any] = Field(default_factory=dict)
+    model: str = "unknown"
 
 
 class ChunkOut(BaseModel):

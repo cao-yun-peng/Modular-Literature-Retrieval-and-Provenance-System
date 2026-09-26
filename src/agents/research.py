@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+import time
 from dataclasses import asdict, dataclass, field
 
 from src.libs.llm.base_llm import Message
@@ -67,11 +68,30 @@ class ResearchAgent:
     Each instance owns its query tool to avoid sharing mutable collection caches.
     """
 
-    def __init__(self, llm, retrieve, *, acquire=None, options=None):
+    def __init__(self, llm, retrieve, *, acquire=None, options=None, on_event=None):
         self.llm = llm
         self.retrieve = retrieve
         self.acquire = acquire
         self.options = options or ResearchOptions()
+        self.on_event = on_event
+
+    def _emit(
+        self, result, stage, phase, message, *, round_number=None, query=None, started=None, **data
+    ):
+        """Optional synchronous observer; no model prompts or raw responses are published."""
+        if self.on_event:
+            self.on_event(
+                {
+                    "stage": stage,
+                    "phase": phase,
+                    "message": message,
+                    "round": round_number,
+                    "query": query,
+                    "data": data,
+                    "elapsed_ms": (time.monotonic() - started) * 1000 if started else None,
+                },
+                result,
+            )
 
     async def _model(self, instruction, payload, result):
         result.model_calls += 1
@@ -168,12 +188,22 @@ class ResearchAgent:
         for round_number in range(1, self.options.max_rounds + 1):
             before = len(result.evidence)
             step = {"round": round_number, "queries": [], "new_evidence": 0}
+            result.iterations.append(step)
             for query in queries[: self.options.queries_per_round]:
                 key = query.casefold().strip()
                 if key in seen_queries:
                     continue
                 seen_queries.add(key)
                 step["queries"].append(query)
+                started = time.monotonic()
+                self._emit(
+                    result,
+                    "retrieval",
+                    "started",
+                    "检索文献证据",
+                    round_number=round_number,
+                    query=query,
+                )
                 try:
                     response = await asyncio.wait_for(
                         self.retrieve(
@@ -191,8 +221,40 @@ class ResearchAgent:
                     result.warnings.append(
                         f"retrieval_failed:{type(exc).__name__}:round_{round_number}"
                     )
+                    self._emit(
+                        result,
+                        "retrieval",
+                        "failed",
+                        "本次检索失败，保留已有证据",
+                        round_number=round_number,
+                        query=query,
+                        started=started,
+                    )
+                else:
+                    step["new_evidence"] = len(result.evidence) - before
+                    self._emit(
+                        result,
+                        "retrieval",
+                        "completed",
+                        "检索完成",
+                        round_number=round_number,
+                        query=query,
+                        started=started,
+                    )
+                    self._emit(
+                        result,
+                        "evidence",
+                        "completed",
+                        "证据已汇总并去重",
+                        round_number=round_number,
+                        new_evidence=step["new_evidence"],
+                        evidence_count=len(result.evidence),
+                    )
             step["new_evidence"] = len(result.evidence) - before
-            result.iterations.append(step)
+            started = time.monotonic()
+            self._emit(
+                result, "assessment", "started", "判断相关性与覆盖缺口", round_number=round_number
+            )
             try:
                 assessment = await self._model(
                     'Assess relevance and coverage. Return {"sufficient":boolean, '
@@ -223,10 +285,31 @@ class ResearchAgent:
                 step["sufficient"] = sufficient
                 step["relevant_ids"] = sorted(relevant_ids)
                 queries = self._strings(assessment.get("queries"), self.options.queries_per_round)
+                step["gaps"] = list(result.gaps)
+                step["next_queries"] = list(queries)
             except Exception as exc:
                 result.warnings.append(f"assessment_failed:{type(exc).__name__}")
                 result.stop_reason = "assessment_failed"
+                self._emit(
+                    result,
+                    "assessment",
+                    "failed",
+                    "覆盖判断失败",
+                    round_number=round_number,
+                    started=started,
+                )
                 break
+            self._emit(
+                result,
+                "assessment",
+                "completed",
+                "覆盖判断完成",
+                round_number=round_number,
+                started=started,
+                sufficient=sufficient,
+                gaps=step["gaps"],
+                relevant_ids=step["relevant_ids"],
+            )
             if sufficient:
                 result.stop_reason = "sufficient_evidence"
                 break
@@ -266,12 +349,31 @@ class ResearchAgent:
             if round_number > 1 and not step["new_evidence"]:
                 result.stop_reason = "no_new_evidence"
                 break
+            if round_number < self.options.max_rounds:
+                self._emit(
+                    result,
+                    "rewrite",
+                    "completed",
+                    "已生成下一轮补充查询",
+                    round_number=round_number,
+                    queries=queries,
+                )
 
         selected = [e for e in result.evidence if e["id"] in relevant_ids]
         if not selected:
-            result.stop_reason = "no_relevant_evidence" if result.evidence else "no_evidence"
+            if result.stop_reason != "assessment_failed":
+                result.stop_reason = "no_relevant_evidence" if result.evidence else "no_evidence"
             result.markdown = "证据不足：未获得可用于回答的相关文献片段。请补充文献或调整检索范围。"
+            self._emit(
+                result,
+                "finished",
+                "completed",
+                "研究结束，未获得可用研究结果",
+                stop_reason=result.stop_reason,
+            )
             return result
+        started = time.monotonic()
+        self._emit(result, "synthesis", "started", "根据相关证据生成研究草稿")
         try:
             draft = await self._model(
                 'Synthesize ONLY supplied evidence. Return {"sections":[{"heading":string, '
@@ -286,12 +388,28 @@ class ResearchAgent:
                 {"topic": topic, "mode": mode, "evidence": selected, "gaps": result.gaps},
                 result,
             )
+        except Exception as exc:
+            result.warnings.append(f"synthesis_failed:{type(exc).__name__}")
+            result.stop_reason = "synthesis_failed"
+            result.markdown = "综述生成失败；已保留检索证据和查询记录，可据此重试。"
+            self._emit(result, "synthesis", "failed", "草稿生成失败，已保留证据", started=started)
+        else:
+            self._emit(result, "synthesis", "completed", "草稿生成完成", started=started)
+            started = time.monotonic()
+            self._emit(result, "validation", "started", "检查引用身份与来源年份")
             result.markdown, accepted = render_draft(draft, selected, result)
             if accepted and result.stop_reason == "sufficient_evidence" and not result.warnings:
                 result.status = "draft"
-        except Exception as exc:
-            result.warnings.append(f"synthesis_failed:{type(exc).__name__}")
-            result.markdown = "综述生成失败；已保留检索证据和查询记录，可据此重试。"
+            self._emit(
+                result,
+                "validation",
+                "completed",
+                "引用与年份检查完成",
+                started=started,
+                accepted_claims=accepted,
+                warning_count=len(result.warnings),
+            )
+        self._emit(result, "finished", "completed", "研究流程结束", stop_reason=result.stop_reason)
         return result
 
 

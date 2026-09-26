@@ -8,7 +8,7 @@ from pathlib import Path
 from src.agents.research import ResearchAgent, ResearchOptions
 
 
-def build_agent(settings, *, options=None, download_dir=None, zotero=None):
+def build_agent(settings, *, options=None, download_dir=None, zotero=None, on_event=None):
     from src.libs.llm.llm_factory import LLMFactory
     from src.mcp_server.tools.query_knowledge_hub import QueryKnowledgeHubTool
 
@@ -47,4 +47,6 @@ def build_agent(settings, *, options=None, download_dir=None, zotero=None):
             # is not a hard wall-clock bound in this prototype.
             return await asyncio.to_thread(service.acquire, query, collection, limit)
 
-    return ResearchAgent(llm, query_tool.execute, acquire=acquire, options=options)
+    return ResearchAgent(
+        llm, query_tool.execute, acquire=acquire, options=options, on_event=on_event
+    )

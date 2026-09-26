@@ -13,11 +13,18 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from src.core.settings import load_settings, resolve_path
 from src.core.baseline_guard import baseline_marker
+from src.core.settings import load_settings
 from src.libs.loader.mineru_agent import MinerUAgentClient
 
-from .schemas import ApiProblem, ChunkOut, EvidenceOut, RetrievalResultOut
+from .schemas import (
+    ApiProblem,
+    ChunkOut,
+    EvidenceOut,
+    ResearchRequest,
+    ResearchResultOut,
+    RetrievalResultOut,
+)
 from .store import Registry, default_workbench_root, digest, now
 
 log = logging.getLogger(__name__)
@@ -206,7 +213,9 @@ class Workbench:
 
     def ensure_writable(self):
         if baseline_marker(self.settings, self.collection(None)).exists():
-            raise ApiProblem("baseline_frozen", "此知识库已固定为评测基线，请使用独立知识库进行修改", 409)
+            raise ApiProblem(
+                "baseline_frozen", "此知识库已固定为评测基线，请使用独立知识库进行修改", 409
+            )
 
     def create_ingestion(self, request, key, retry_of=None):
         self.ensure_writable()
@@ -267,6 +276,10 @@ class Workbench:
         run = self.registry.get("runs", run_id)
         if run["status"] not in ("failed", "interrupted"):
             raise ApiProblem("not_retryable", "仅失败或中断任务可以重试", 409)
+        if run["kind"] == "research":
+            if stage != "auto":
+                raise ApiProblem("invalid_stage", "研究任务仅支持完整重新运行", 422)
+            return self.create_research(run["payload"], key, run_id)
         if run["kind"] == "ingestion":
             if stage == "answer":
                 raise ApiProblem("invalid_stage", "摄入任务没有回答阶段", 422)
@@ -293,6 +306,7 @@ class Workbench:
         self.pools = {
             "ingestion": ThreadPoolExecutor(max_workers=1, thread_name_prefix="ingestion"),
             "retrieval": ThreadPoolExecutor(max_workers=2, thread_name_prefix="retrieval"),
+            "research": ThreadPoolExecutor(max_workers=1, thread_name_prefix="research"),
         }
         self.dispatcher = threading.Thread(target=self._dispatch, daemon=True)
         self.dispatcher.start()
@@ -303,7 +317,7 @@ class Workbench:
                 self.futures = {k: v for k, v in self.futures.items() if not v[1].done()}
                 for run in sorted(self.registry.all("runs"), key=lambda r: r["created_at"]):
                     kind = run["kind"]
-                    capacity = 1 if kind == "ingestion" else 2
+                    capacity = 2 if kind == "retrieval" else 1
                     if (
                         run["status"] == "queued"
                         and run["id"] not in self.futures
@@ -331,6 +345,8 @@ class Workbench:
             self.registry.event(run_id, "starting", message="开始执行")
             if run["kind"] == "ingestion":
                 self.ingest(run)
+            elif run["kind"] == "research":
+                self.research(run)
             else:
                 self.retrieve(run)
             self.registry.event(run_id, "completed", "succeeded", "任务完成")
@@ -342,6 +358,135 @@ class Workbench:
             self.registry.event(run_id, current["stage"], "failed", error["message"])
             if run["kind"] == "ingestion":
                 self.registry.update("documents", run["document_id"], status="failed")
+
+    def create_research(self, request, key, retry_of=None):
+        payload = ResearchRequest.model_validate(request).model_dump()
+        payload["collection"] = self.collection(payload.get("collection"))
+        if self.registry.health(payload["collection"])["state"] != "ready":
+            raise ApiProblem("collection_unavailable", "知识库正在写入或需要恢复", 409, True)
+        if not any(
+            d.get("latest_successful_run_id") and d["collection"] == payload["collection"]
+            for d in self.registry.all("documents")
+        ):
+            raise ApiProblem("empty_collection", "请先完成至少一篇文献的处理", 409)
+        config = {**self.snapshot(), "research_revision": "research-web-v1", "research": payload}
+        return self.registry.create_run(
+            "research",
+            payload,
+            config,
+            key,
+            title=payload["topic"][:90],
+            retry_of=retry_of,
+        )
+
+    def research_result(self, run_id):
+        run = self.registry.get("runs", run_id)
+        if run["kind"] != "research":
+            raise ApiProblem("wrong_run_type", "此任务不是研究任务", 422)
+        path = self.folder(run_id) / "research.json"
+        if path.exists():
+            result = json.loads(path.read_text(encoding="utf-8"))
+        else:
+            result = ResearchResultOut(
+                topic=run["payload"]["topic"],
+                mode=run["payload"]["mode"],
+                collection=run["collection"],
+                run_options=run["payload"],
+            ).model_dump()
+        if run["status"] in {"failed", "interrupted"}:
+            result["status"] = "failed"
+        return result
+
+    def research(self, run):
+        from src.agents.research import ResearchOptions
+        from src.agents.runtime import build_agent
+
+        rid, payload = run["id"], run["payload"]
+        folder = self.folder(rid)
+        # Resolve library links once per run, scoped to the configured collection.
+        lookup = {}
+        for doc in self.registry.all("documents"):
+            if doc["collection"] == run["collection"] and doc.get("latest_successful_run_id"):
+                for chunk in self.registry.chunks(doc["latest_successful_run_id"]):
+                    lookup[chunk["id"]] = (doc, chunk)
+
+        def snapshot(result, final=False):
+            data = result.to_dict()
+            linked = []
+            for item in data["evidence"]:
+                pair = lookup.get(item["chunk_id"])
+                entry = {**item, "document_id": None, "run_id": None}
+                if pair:
+                    doc, chunk = pair
+                    entry.update(
+                        document_id=doc["id"],
+                        run_id=chunk["run_id"],
+                        title=doc["title"],
+                        section=chunk["section"],
+                    )
+                linked.append(entry)
+            data["evidence"] = linked
+            data["source_count"] = len(
+                {e.get("document_id") or e.get("source") or e["chunk_id"] for e in result.evidence}
+            )
+            data["status"] = "in_progress"
+            if final:
+                data["status"] = result.status
+                if any(
+                    w.startswith(("assessment_failed:", "synthesis_failed:"))
+                    for w in result.warnings
+                ) or (not result.evidence and result.warnings):
+                    data["status"] = "failed"
+                elif result.stop_reason in {"no_evidence", "no_relevant_evidence"}:
+                    data["status"] = "insufficient"
+            else:
+                data["stop_reason"] = None
+            output = ResearchResultOut.model_validate(data).model_dump()
+            self.write(folder, "research.json", output)
+            self.registry.update(
+                "runs",
+                rid,
+                result={
+                    "evidence_count": len(linked),
+                    "source_count": output["source_count"],
+                    "round_count": len(output["iterations"]),
+                    "research_status": output["status"],
+                    "stop_reason": output["stop_reason"],
+                    "model_calls": output["model_calls"],
+                },
+            )
+            return output
+
+        def observe(event, result):
+            snapshot(result)
+            # The registry status describes the run, not the individual step.
+            self.registry.event(rid, status="running", **event)
+
+        options = ResearchOptions(
+            max_rounds=payload["max_rounds"],
+            queries_per_round=payload["queries_per_round"],
+            top_k=payload["top_k"],
+            allow_web=False,
+        )
+        agent = build_agent(self.settings, options=options, on_event=observe)
+        retrieve = agent.retrieve
+
+        async def guarded_retrieve(**kwargs):
+            with self.lock(run["collection"]):
+                if self.registry.health(run["collection"])["state"] != "ready":
+                    raise ApiProblem("needs_repair", "知识库尚未恢复，暂时不能检索", 409, True)
+                return await retrieve(**kwargs)
+
+        agent.retrieve = guarded_retrieve
+        result = asyncio.run(
+            agent.run(payload["topic"], mode=payload["mode"], collection=run["collection"])
+        )
+        output = snapshot(result, final=True)
+        self.write(folder, "report.md", output["markdown"])
+        if output["status"] == "failed":
+            raise ApiProblem(
+                "research_failed", "研究阶段执行失败，已保留过程和证据，可重新运行", 502, True
+            )
 
     def ingest(self, run):
         from src.core.trace import TraceCollector, TraceContext
